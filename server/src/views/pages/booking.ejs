@@ -1,0 +1,161 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Appointments</p>
+    <h1>Book your visit</h1>
+    <p class="lead">A calm six-step journey from treatment choice to confirmed request — designed for clarity at every stage.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 1.5rem;">
+  <div class="container booking-shell">
+    <ol class="booking-steps" id="booking-steps" aria-label="Booking progress">
+      <li class="is-active is-current" data-step-indicator="1"><span>1</span> Treatment</li>
+      <li data-step-indicator="2"><span>2</span> Dentist</li>
+      <li data-step-indicator="3"><span>3</span> Date</li>
+      <li data-step-indicator="4"><span>4</span> Time</li>
+      <li data-step-indicator="5"><span>5</span> Details</li>
+      <li data-step-indicator="6"><span>6</span> Confirm</li>
+    </ol>
+
+    <form id="booking-form" class="booking-form" novalidate
+      data-preselect-service="<%= preselect.serviceId %>"
+      data-preselect-doctor="<%= preselect.doctorId %>"
+    >
+      <p class="form-error" id="booking-error" role="alert" aria-live="assertive" hidden></p>
+
+      <div class="booking-panel is-active" data-step="1">
+        <h2>Select your treatment</h2>
+        <% if (!services.length) { %>
+          <p class="empty-note">No active services available. Please add services in the admin panel.</p>
+        <% } else { %>
+          <div class="option-grid">
+            <% services.forEach(function(service) { %>
+              <label class="option-card">
+                <input type="radio" name="serviceId" value="<%= service.id %>" required />
+                <span>
+                  <strong><%= service.title %></strong>
+                  <em><%= service.duration %> min · from <%= helpers.money(service.price) %></em>
+                  <small><%= (service.description || '').slice(0, 110) %><%= (service.description || '').length > 110 ? '…' : '' %></small>
+                </span>
+              </label>
+            <% }) %>
+          </div>
+        <% } %>
+        <div class="booking-nav">
+          <button type="button" class="btn btn-dark" data-next>Continue</button>
+        </div>
+      </div>
+
+      <div class="booking-panel" data-step="2" hidden>
+        <h2>Choose your dentist</h2>
+        <% if (!doctors.length) { %>
+          <p class="empty-note">No active dentists available.</p>
+        <% } else { %>
+          <div class="option-grid">
+            <% doctors.forEach(function(doctor) { %>
+              <label class="option-card">
+                <input type="radio" name="doctorId" value="<%= doctor.id %>" required />
+                <span>
+                  <strong><%= doctor.name %></strong>
+                  <em><%= doctor.specialization || 'General Dentistry' %><% if (doctor.experience != null) { %> · <%= doctor.experience %> yrs<% } %></em>
+                  <% if (doctor.qualification) { %><small><%= doctor.qualification %></small><% } %>
+                  <% if (doctor.availabilities && doctor.availabilities.length) { %>
+                    <small>
+                      Available: <%= doctor.availabilities.map(function(a){ return helpers.formatDay(a.day); }).join(', ') %>
+                    </small>
+                  <% } else { %>
+                    <small>Availability not set</small>
+                  <% } %>
+                </span>
+              </label>
+            <% }) %>
+          </div>
+        <% } %>
+        <div class="booking-nav">
+          <button type="button" class="btn btn-light-dark" data-back>Back</button>
+          <button type="button" class="btn btn-dark" data-next>Continue</button>
+        </div>
+      </div>
+
+      <div class="booking-panel" data-step="3" hidden>
+        <h2>Select an available date</h2>
+        <div class="date-field-shell">
+          <label class="field" style="margin-bottom: 0;">
+            <span>Preferred date</span>
+            <input type="date" name="date" id="booking-date" required />
+          </label>
+          <p class="muted small" id="date-hint" style="margin-top: 0.85rem;">
+            Past dates are blocked. Clinic holidays and dentist leave return no available slots.
+          </p>
+        </div>
+        <div class="booking-nav">
+          <button type="button" class="btn btn-light-dark" data-back>Back</button>
+          <button type="button" class="btn btn-dark" data-next data-load-slots>Continue</button>
+        </div>
+      </div>
+
+      <div class="booking-panel" data-step="4" hidden>
+        <h2>Choose a time slot</h2>
+        <p class="muted" id="slot-hint">Loading open slots for your dentist and date…</p>
+        <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
+        <input type="hidden" name="slot" id="booking-slot" required />
+        <div class="booking-nav">
+          <button type="button" class="btn btn-light-dark" data-back>Back</button>
+          <button type="button" class="btn btn-dark" data-next>Continue</button>
+        </div>
+      </div>
+
+      <div class="booking-panel" data-step="5" hidden>
+        <h2>Your details</h2>
+        <div class="form-grid-2">
+          <label class="field">
+            <span>Full name</span>
+            <input type="text" name="patientName" required autocomplete="name" maxlength="120" placeholder="Alex Morgan" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" name="email" required autocomplete="email" maxlength="254" placeholder="alex@email.com" />
+          </label>
+          <label class="field">
+            <span>Phone</span>
+            <input type="tel" name="phone" required autocomplete="tel" maxlength="40" placeholder="+1 555 0100" />
+          </label>
+          <label class="field field-span">
+            <span>Message (optional)</span>
+            <textarea name="message" rows="4" maxlength="2000" placeholder="Share anything that helps us prepare for your visit."></textarea>
+          </label>
+        </div>
+        <div class="booking-nav">
+          <button type="button" class="btn btn-light-dark" data-back>Back</button>
+          <button type="button" class="btn btn-dark" data-next>Review booking</button>
+        </div>
+      </div>
+
+      <div class="booking-panel" data-step="6" hidden>
+        <h2>Confirm your appointment</h2>
+        <div class="confirm-card" id="confirm-summary"></div>
+        <div class="booking-nav" id="confirm-actions">
+          <button type="button" class="btn btn-light-dark" data-back>Back</button>
+          <button type="submit" class="btn btn-accent" id="booking-submit">Confirm appointment</button>
+        </div>
+      </div>
+
+      <div class="booking-panel" data-step="done" hidden id="booking-success-panel">
+        <h2>Booking received</h2>
+        <div class="confirm-card success-card" id="booking-success-summary"></div>
+        <p class="form-success" id="booking-success">
+          Your request is pending confirmation. Our team will review the details and be in touch shortly.
+        </p>
+        <div class="booking-nav">
+          <a class="btn btn-dark" href="/">Return home</a>
+          <a class="btn btn-light-dark" href="/book">Book another visit</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

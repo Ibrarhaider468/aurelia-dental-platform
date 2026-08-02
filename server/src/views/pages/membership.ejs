@@ -1,0 +1,79 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Membership</p>
+    <h1>Plans for ongoing dental care</h1>
+    <p class="lead">Subscribe to an active plan for preventive care, priority booking, and member benefits — managed live from the clinic.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 1rem;">
+  <div class="container">
+    <% if (!memberships.length) { %>
+      <p class="empty-note">No active membership plans yet. Add plans in the admin panel.</p>
+    <% } else { %>
+      <div class="membership-grid">
+        <% memberships.forEach(function(plan, index) { %>
+          <article class="membership-card<%= index === 1 ? ' featured' : '' %> reveal" id="plan-<%= plan.id %>">
+            <h3><%= plan.name %></h3>
+            <p class="price">
+              <%= helpers.money(plan.price) %>
+              <small>/<%= plan.billingCycle %></small>
+            </p>
+            <p class="muted"><%= plan.durationMonths || 1 %> month duration</p>
+            <% if (plan.description) { %><p><%= plan.description %></p><% } %>
+            <ul>
+              <% (plan.benefits || []).forEach(function(benefit) { %>
+                <li><%= benefit %></li>
+              <% }) %>
+            </ul>
+            <% if (plan.includedTreatments && plan.includedTreatments.length) { %>
+              <p class="muted small">Included treatments</p>
+              <ul>
+                <% plan.includedTreatments.forEach(function(item) { %>
+                  <li><%= item %></li>
+                <% }) %>
+              </ul>
+            <% } %>
+            <button
+              type="button"
+              class="btn <%= index === 1 ? 'btn-accent' : 'btn-dark' %> membership-subscribe"
+              data-plan-id="<%= plan.id %>"
+              data-plan-name="<%= plan.name %>"
+            >
+              Subscribe
+            </button>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div id="membership-form-panel" class="confirm-card" hidden style="margin-top: 2rem;">
+      <h2 style="font-size: 1.8rem;">Subscribe to <span id="selected-plan-name"></span></h2>
+      <form id="membership-subscribe-form" class="form-grid-2" style="margin-top: 1rem;">
+        <input type="hidden" name="planId" id="subscribe-plan-id" />
+        <label class="field">
+          <span>Full name</span>
+          <input name="patientName" required maxlength="120" />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" required />
+        </label>
+        <label class="field">
+          <span>Phone</span>
+          <input name="phone" required />
+        </label>
+        <div class="booking-nav field-span">
+          <button type="submit" class="btn btn-accent">Confirm subscription</button>
+        </div>
+        <p class="form-error field-span" id="membership-error" role="alert" aria-live="assertive" hidden></p>
+        <p class="form-success field-span" id="membership-success" role="status" aria-live="polite" hidden></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,65 @@
+</main>
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div>
+      <p class="footer-brand"><%= settings.clinicName || 'Aurelia Dental' %></p>
+      <p class="footer-tag">Premium dentistry with quiet confidence — personal care plans, digital precision, and calm clinical spaces.</p>
+      <% const social = settings.socialLinks || {}; %>
+      <div class="social-links" aria-label="Social links">
+        <% if (social.instagram) { %><a href="<%= social.instagram %>" target="_blank" rel="noopener noreferrer">IG</a><% } %>
+        <% if (social.facebook) { %><a href="<%= social.facebook %>" target="_blank" rel="noopener noreferrer">FB</a><% } %>
+        <% if (social.linkedin) { %><a href="<%= social.linkedin %>" target="_blank" rel="noopener noreferrer">IN</a><% } %>
+        <% if (!social.instagram && !social.facebook && !social.linkedin) { %>
+          <a href="/#contact" aria-label="Contact">@</a>
+        <% } %>
+      </div>
+    </div>
+    <div>
+      <h2 class="footer-heading">Explore</h2>
+      <div class="footer-links">
+        <a href="/treatments">Treatments</a>
+        <a href="/dentists">Dentists</a>
+        <a href="/membership">Membership</a>
+        <a href="/insurance">Insurance</a>
+        <a href="/payments">Payments</a>
+        <a href="/book">Book</a>
+      </div>
+    </div>
+    <div>
+      <h2 class="footer-heading">Services</h2>
+      <div class="footer-links">
+        <% if (services && services.length) { %>
+          <% services.slice(0, 6).forEach(function(service) { %>
+            <a href="/treatments#service-<%= service.id %>"><%= service.title %></a>
+          <% }) %>
+        <% } else { %>
+          <a href="/treatments">View all treatments</a>
+        <% } %>
+      </div>
+    </div>
+    <div>
+      <h2 class="footer-heading">Contact</h2>
+      <p><%= settings.address || '214 Harbor Lane, Suite 120' %></p>
+      <% if (settings.phone) { %>
+        <p><a href="tel:<%= String(settings.phone).replace(/\s+/g, '') %>"><%= settings.phone %></a></p>
+      <% } %>
+      <% if (settings.email) { %>
+        <p><a href="mailto:<%= settings.email %>"><%= settings.email %></a></p>
+      <% } %>
+      <p style="margin-top: 1rem;"><a class="btn btn-accent" href="/book">Book Appointment</a></p>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <p>© <%= new Date().getFullYear() %> <%= settings.clinicName || 'Aurelia Dental' %>. All rights reserved.</p>
+    <p><a href="/#faq">FAQ</a> · <a href="/#contact">Visit</a></p>
+  </div>
+</footer>
+<script src="/js/main.js" defer></script>
+<% if (typeof page !== 'undefined' && page === 'booking') { %>
+  <script src="/js/booking.js" defer></script>
+<% } %>
+<% if (typeof page !== 'undefined' && page === 'membership') { %>
+  <script src="/js/membership.js" defer></script>
+<% } %>
+</body>
+</html>

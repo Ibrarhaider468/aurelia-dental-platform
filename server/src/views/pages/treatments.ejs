@@ -1,0 +1,43 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Treatments</p>
+    <h1>Care crafted with precision</h1>
+    <p class="lead">Explore our full suite of active treatments. Every option is managed in the clinic and shown live from the database.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 1rem;">
+  <div class="container">
+    <% if (!services.length) { %>
+      <p class="empty-note reveal">Treatments will appear here once added in the admin panel.</p>
+    <% } else { %>
+      <div class="treatments-grid">
+        <% services.forEach(function(service) { %>
+          <article class="treatment-item reveal" id="service-<%= service.id %>">
+            <div class="treatment-media">
+              <% if (service.image) { %>
+                <img src="<%= service.image %>" alt="<%= service.title %>" loading="lazy" decoding="async" width="720" height="540" />
+              <% } else { %>
+                <div class="media-fallback"></div>
+              <% } %>
+            </div>
+            <div class="treatment-body">
+              <h3><%= service.title %></h3>
+              <p><%= service.description %></p>
+              <div class="meta-row">
+                <span><%= service.duration %> min</span>
+                <span>From <%= helpers.money(service.price) %></span>
+              </div>
+              <a class="btn btn-dark" href="/book?serviceId=<%= service.id %>">Book this treatment</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

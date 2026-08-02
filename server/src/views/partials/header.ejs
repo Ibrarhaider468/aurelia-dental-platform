@@ -1,0 +1,64 @@
+<header class="site-header" id="top">
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="<%= settings.clinicName || 'Aurelia Dental' %> home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span><%= settings.clinicName || 'Aurelia Dental' %></span>
+    </a>
+
+    <nav class="nav-desktop" aria-label="Primary">
+      <div class="nav-item has-dropdown">
+        <button
+          type="button"
+          class="nav-link dropdown-trigger"
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-controls="treatments-menu"
+          id="treatments-trigger"
+        >
+          Treatments
+        </button>
+        <div class="dropdown" role="menu" id="treatments-menu" aria-labelledby="treatments-trigger">
+          <% if (services.length) { %>
+            <% services.slice(0, 10).forEach(function(service) { %>
+              <a href="/treatments#service-<%= service.id %>" role="menuitem">
+                <%= service.title %>
+              </a>
+            <% }) %>
+          <% } else { %>
+            <a href="/treatments" role="menuitem">View treatments</a>
+          <% } %>
+          <a href="/treatments" class="dropdown-all" role="menuitem">All treatments</a>
+        </div>
+      </div>
+      <a class="nav-link<%= typeof currentPath !== 'undefined' && currentPath === '/dentists' ? ' is-current' : '' %>" href="/dentists"<%= typeof currentPath !== 'undefined' && currentPath === '/dentists' ? ' aria-current="page"' : '' %>>Dentists</a>
+      <a class="nav-link<%= typeof currentPath !== 'undefined' && currentPath === '/membership' ? ' is-current' : '' %>" href="/membership"<%= typeof currentPath !== 'undefined' && currentPath === '/membership' ? ' aria-current="page"' : '' %>>Membership</a>
+      <a class="nav-link<%= typeof currentPath !== 'undefined' && currentPath === '/insurance' ? ' is-current' : '' %>" href="/insurance"<%= typeof currentPath !== 'undefined' && currentPath === '/insurance' ? ' aria-current="page"' : '' %>>Insurance</a>
+      <a class="nav-link<%= typeof currentPath !== 'undefined' && currentPath === '/payments' ? ' is-current' : '' %>" href="/payments"<%= typeof currentPath !== 'undefined' && currentPath === '/payments' ? ' aria-current="page"' : '' %>>Payments</a>
+      <a class="nav-link" href="/#contact">Contact</a>
+    </nav>
+
+    <a class="btn btn-dark header-cta" href="/book">Book Appointment</a>
+
+    <button
+      type="button"
+      class="menu-toggle"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      data-menu-toggle
+    >
+      <span class="sr-only">Open menu</span>
+      <span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <nav class="mobile-menu" id="mobile-menu" hidden aria-label="Mobile">
+    <a href="/treatments">Treatments</a>
+    <a href="/dentists">Dentists</a>
+    <a href="/membership">Membership</a>
+    <a href="/insurance">Insurance</a>
+    <a href="/payments">Payments</a>
+    <a href="/#contact">Contact</a>
+    <a class="btn btn-dark" href="/book">Book Appointment</a>
+  </nav>
+</header>
+<main id="main-content">

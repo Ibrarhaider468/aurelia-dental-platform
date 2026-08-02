@@ -1,0 +1,57 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Payments</p>
+    <h1>Clear, flexible payment options</h1>
+    <p class="lead">
+      Choose the method that suits your care plan. Our gateway-ready architecture supports cards, wallets, insurance billing, and memberships.
+    </p>
+    <% if (query && query.status === 'success') { %>
+      <p class="form-success" style="margin-top: 1rem;">Payment success return URL reached. Final confirmation depends on webhook verification.</p>
+    <% } %>
+    <% if (query && query.status === 'cancelled') { %>
+      <p class="form-error" style="margin-top: 1rem;">Checkout was cancelled. You can try again anytime.</p>
+    <% } %>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 1rem;">
+  <div class="container">
+    <div class="payment-options reveal">
+      <% (paymentOptions.methods || []).forEach(function(method) { %>
+        <span><%= method.label %></span>
+      <% }) %>
+    </div>
+
+    <div class="simple-grid" style="margin-top: 2.5rem;">
+      <article class="plain-item reveal">
+        <h3>In-clinic &amp; private pay</h3>
+        <p>Pay securely at reception or settle privately after your treatment plan is agreed. Currency: <%= paymentOptions.currency %>.</p>
+      </article>
+      <article class="plain-item reveal">
+        <h3>Card &amp; digital wallets</h3>
+        <p>
+          Prepared for Stripe<%= paymentOptions.stripe && paymentOptions.stripe.configured ? ' (configured)' : '' %>,
+          PayPal<%= paymentOptions.paypal && paymentOptions.paypal.configured ? ' (configured)' : '' %>,
+          card payments, Apple Pay, and Google Pay.
+        </p>
+      </article>
+      <article class="plain-item reveal">
+        <h3>Insurance &amp; finance</h3>
+        <p>
+          <%= insurance.length %> accepted insurance provider<%= insurance.length === 1 ? '' : 's' %> listed live from the clinic database,
+          plus monthly finance and membership billing options.
+        </p>
+      </article>
+    </div>
+
+    <div class="contact-actions" style="margin-top: 2rem;">
+      <a class="btn btn-dark" href="/book">Book and discuss payment</a>
+      <a class="btn btn-light-dark" href="/membership">View membership plans</a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

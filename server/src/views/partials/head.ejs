@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <meta name="description" content="<%= description %>" />
+    <meta name="robots" content="<%= typeof robots !== 'undefined' ? robots : 'index, follow' %>" />
+    <% if (typeof canonical !== 'undefined' && canonical) { %>
+      <link rel="canonical" href="<%= canonical %>" />
+    <% } %>
+
+    <% if (typeof og !== 'undefined' && og) { %>
+      <meta property="og:type" content="<%= og.type || 'website' %>" />
+      <meta property="og:site_name" content="<%= og.siteName || 'Aurelia Dental' %>" />
+      <meta property="og:title" content="<%= og.title %>" />
+      <meta property="og:description" content="<%= og.description %>" />
+      <meta property="og:url" content="<%= og.url %>" />
+      <meta property="og:image" content="<%= og.image %>" />
+      <meta property="og:locale" content="en_US" />
+    <% } %>
+
+    <% if (typeof twitter !== 'undefined' && twitter) { %>
+      <meta name="twitter:card" content="<%= twitter.card || 'summary_large_image' %>" />
+      <meta name="twitter:title" content="<%= twitter.title %>" />
+      <meta name="twitter:description" content="<%= twitter.description %>" />
+      <meta name="twitter:image" content="<%= twitter.image %>" />
+    <% } %>
+
+    <meta name="theme-color" content="#141816" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/main.css" />
+
+    <% if (typeof structuredData !== 'undefined' && structuredData) { %>
+      <script type="application/ld+json">
+        <%- JSON.stringify(structuredData) %>
+      </script>
+    <% } %>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>

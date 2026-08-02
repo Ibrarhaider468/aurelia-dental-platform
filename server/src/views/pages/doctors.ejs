@@ -1,0 +1,49 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="page-hero">
+  <div class="container">
+    <p class="eyebrow">Dentists</p>
+    <h1>Our clinical team</h1>
+    <p class="lead">Meet the dentists behind Aurelia — specialists dedicated to calm, precise, patient-first care.</p>
+  </div>
+</section>
+
+<section class="section" style="padding-top: 1rem;">
+  <div class="container">
+    <% if (!doctors.length) { %>
+      <p class="empty-note reveal">Dentists will appear here once added in the admin panel.</p>
+    <% } else { %>
+      <div class="doctors-grid">
+        <% doctors.forEach(function(doctor) { %>
+          <article class="doctor-card reveal" id="doctor-<%= doctor.id %>">
+            <div class="doctor-media">
+              <% if (doctor.image) { %>
+                <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="lazy" decoding="async" width="640" height="800" />
+              <% } else { %>
+                <div class="media-fallback doctor-fallback"></div>
+              <% } %>
+            </div>
+            <div class="doctor-card__body">
+              <h3><%= doctor.name %></h3>
+              <p class="doctor-spec"><%= doctor.specialization || 'General Dentistry' %></p>
+              <p class="muted">
+                <%= doctor.qualification || 'DDS' %><% if (doctor.experience != null) { %> · <%= doctor.experience %> years experience<% } %>
+              </p>
+              <p class="doctor-bio"><%= doctor.bio || 'Dedicated to calm, precise dental care.' %></p>
+              <% if (doctor.availabilities && doctor.availabilities.length) { %>
+                <p class="availability-preview">
+                  Available:
+                  <%= doctor.availabilities.map(function(a){ return helpers.formatDay(a.day); }).join(', ') %>
+                </p>
+              <% } %>
+              <a class="btn btn-dark" href="/book?doctorId=<%= doctor.id %>">View availability &amp; book</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

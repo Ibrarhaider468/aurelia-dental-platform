@@ -1,0 +1,402 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  DOCTOR
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  PRIVATE
+  INSURANCE
+  CREDIT_CARD
+  DEBIT_CARD
+  APPLE_PAY
+  GOOGLE_PAY
+  BANK_TRANSFER
+  FINANCE_PLAN
+  MEMBERSHIP
+}
+
+enum MembershipStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
+
+enum InsuranceVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum PaymentGateway {
+  MANUAL
+  STRIPE
+  PAYPAL
+  CARD
+  APPLE_PAY
+  GOOGLE_PAY
+}
+
+enum WebhookEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  isActive  Boolean  @default(true)
+  doctor    Doctor?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Doctor {
+  id             String         @id @default(cuid())
+  userId         String?        @unique
+  user           User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name           String
+  image          String?
+  qualification  String?
+  experience     Int?
+  specialization String?
+  bio            String?        @db.Text
+  isActive       Boolean        @default(true)
+  sortOrder      Int            @default(0)
+  availabilities Availability[]
+  leaves         DoctorLeave[]
+  appointments   Appointment[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@map("doctors")
+}
+
+model ClinicHoliday {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date @unique
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clinic_holidays")
+}
+
+model DoctorLeave {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, date])
+  @@map("doctor_leaves")
+}
+
+model Availability {
+  id          String    @id @default(cuid())
+  doctorId    String
+  doctor      Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  day         DayOfWeek
+  startTime   String
+  endTime     String
+  breakStart  String?
+  breakEnd    String?
+  slotMinutes Int       @default(30)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([doctorId, day])
+  @@map("availabilities")
+}
+
+model Service {
+  id           String        @id @default(cuid())
+  title        String
+  slug         String        @unique
+  description  String        @db.Text
+  image        String?
+  duration     Int
+  price        Decimal       @db.Decimal(10, 2)
+  isActive     Boolean       @default(true)
+  sortOrder    Int           @default(0)
+  appointments Appointment[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("services")
+}
+
+model Patient {
+  id               String                @id @default(cuid())
+  name             String
+  email            String                @unique
+  phone            String
+  medicalNotes     String?               @db.Text
+  clinicalNotes    PatientNote[]
+  appointments     Appointment[]
+  payments         Payment[]
+  memberships      PatientMembership[]
+  insuranceDetails PatientInsurance[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@map("patients")
+}
+
+model PatientNote {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  note      String   @db.Text
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId, createdAt])
+  @@map("patient_notes")
+}
+
+model Appointment {
+  id               String            @id @default(cuid())
+  patientId        String?
+  patient          Patient?          @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  patientName      String
+  email            String
+  phone            String
+  doctorId         String
+  doctor           Doctor            @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  serviceId        String
+  service          Service           @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  date             DateTime          @db.Date
+  slot             String
+  message          String?           @db.Text
+  adminNotes       String?           @db.Text
+  status           AppointmentStatus @default(PENDING)
+  previousStatus   AppointmentStatus?
+  rescheduleReason String?
+  payment          Payment?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([doctorId, date, slot, status])
+  @@index([date, status])
+  @@index([email])
+  @@map("appointments")
+}
+
+model Payment {
+  id              String         @id @default(cuid())
+  patientId       String?
+  patient         Patient?       @relation(fields: [patientId], references: [id], onDelete: SetNull)
+  appointmentId   String?        @unique
+  appointment     Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  membershipId    String?
+  membership      PatientMembership? @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  amount          Decimal        @db.Decimal(10, 2)
+  currency        String         @default("USD")
+  method          PaymentMethod
+  status          PaymentStatus  @default(PENDING)
+  gateway         PaymentGateway @default(MANUAL)
+  providerRef     String?
+  checkoutSession String?
+  paidAt          DateTime?
+  notes           String?        @db.Text
+  metadata        Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status, createdAt])
+  @@index([patientId])
+  @@index([providerRef])
+  @@map("payments")
+}
+
+model PaymentWebhookEvent {
+  id          String             @id @default(cuid())
+  gateway     PaymentGateway
+  eventType   String
+  externalId  String?
+  payload     Json
+  status      WebhookEventStatus @default(RECEIVED)
+  error       String?
+  processedAt DateTime?
+  createdAt   DateTime           @default(now())
+
+  @@index([gateway, externalId])
+  @@map("payment_webhook_events")
+}
+
+model MembershipPlan {
+  id                 String              @id @default(cuid())
+  name               String
+  price              Decimal             @db.Decimal(10, 2)
+  billingCycle       String              @default("monthly")
+  durationMonths     Int                 @default(1)
+  benefits           String[]
+  includedTreatments String[]            @default([])
+  description        String?             @db.Text
+  isActive           Boolean             @default(true)
+  sortOrder          Int                 @default(0)
+  subscriptions      PatientMembership[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  @@map("membership_plans")
+}
+
+model PatientMembership {
+  id        String           @id @default(cuid())
+  patientId String
+  patient   Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  planId    String
+  plan      MembershipPlan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+  status    MembershipStatus @default(PENDING)
+  startDate DateTime?
+  endDate   DateTime?
+  payments  Payment[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([patientId, status])
+  @@map("patient_memberships")
+}
+
+model InsuranceProvider {
+  id            String             @id @default(cuid())
+  name          String
+  details       String             @db.Text
+  acceptedPlans String[]           @default([])
+  logo          String?
+  isActive      Boolean            @default(true)
+  sortOrder     Int                @default(0)
+  patientPlans  PatientInsurance[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@map("insurance_providers")
+}
+
+model PatientInsurance {
+  id             String                      @id @default(cuid())
+  patientId      String
+  patient        Patient                     @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  providerId     String
+  provider       InsuranceProvider           @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  policyNumber   String
+  groupNumber    String?
+  holderName     String?
+  status         InsuranceVerificationStatus @default(PENDING)
+  verifiedAt     DateTime?
+  notes          String?                     @db.Text
+  createdAt      DateTime                    @default(now())
+  updatedAt      DateTime                    @updatedAt
+
+  @@index([patientId, status])
+  @@map("patient_insurance")
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  patientName String
+  review      String   @db.Text
+  rating      Int      @default(5)
+  isApproved  Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model Gallery {
+  id          String   @id @default(cuid())
+  beforeImage String
+  afterImage  String
+  treatment   String
+  caption     String?
+  isPublished Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("gallery")
+}
+
+model Settings {
+  id            String   @id @default("clinic")
+  clinicName    String   @default("Aurelia Dental")
+  phone         String?
+  email         String?
+  address       String?
+  openingHours  Json?
+  logo          String?
+  socialLinks   Json?
+  seoTitle      String?
+  seoDescription String?
+  heroTitle     String?
+  heroSubtitle  String?
+  aboutContent  String?  @db.Text
+  mapEmbedUrl   String?
+  updatedAt     DateTime @updatedAt
+
+  @@map("settings")
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @db.Text
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
