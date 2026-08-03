@@ -110,9 +110,11 @@
             <% } %>
           </div>
           <div class="doctor-card__body">
-            <h3><%= doctor.name %></h3>
-            <p class="doctor-spec"><%= doctor.specialization || 'General Dentistry' %></p>
-            <a class="btn btn-dark" href="<%= helpers.doctorPath(doctor) %>">View profile</a>
+            <div class="doctor-card__copy">
+              <h3><%= doctor.name %></h3>
+              <p class="doctor-spec"><%= doctor.specialization || 'General Dentistry' %></p>
+            </div>
+            <a class="btn btn-dark card-cta" href="<%= helpers.doctorPath(doctor) %>">View profile</a>
           </div>
         </article>
       <% }) %>
