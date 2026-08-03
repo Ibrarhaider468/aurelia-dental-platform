@@ -6,17 +6,20 @@ import {
   sanitizeString,
 } from "../utils/sanitize.js";
 
-export async function listPatients({ search } = {}) {
+export async function listPatients({ search, doctorId } = {}) {
   return prisma.patient.findMany({
-    where: search
-      ? {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { email: { contains: search, mode: "insensitive" } },
-            { phone: { contains: search, mode: "insensitive" } },
-          ],
-        }
-      : undefined,
+    where: {
+      ...(doctorId ? { appointments: { some: { doctorId } } } : {}),
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { email: { contains: search, mode: "insensitive" } },
+              { phone: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
     include: {
       _count: {
         select: { appointments: true, payments: true, memberships: true },
@@ -26,27 +29,40 @@ export async function listPatients({ search } = {}) {
   });
 }
 
-export async function getPatient(id) {
+export async function getPatient(id, { doctorId, includeFinance = true } = {}) {
+  if (doctorId) {
+    const linked = await prisma.appointment.findFirst({
+      where: { patientId: id, doctorId },
+      select: { id: true },
+    });
+    if (!linked) throw new AppError("Patient not found", 404);
+  }
+
   const patient = await prisma.patient.findUnique({
     where: { id },
     include: {
       appointments: {
+        where: doctorId ? { doctorId } : undefined,
         orderBy: { date: "desc" },
         include: {
           doctor: { select: { id: true, name: true } },
           service: { select: { id: true, title: true, price: true } },
         },
       },
-      payments: { orderBy: { createdAt: "desc" } },
-      memberships: {
-        include: { plan: true },
-        orderBy: { createdAt: "desc" },
-      },
+      payments: includeFinance ? { orderBy: { createdAt: "desc" } } : false,
+      memberships: includeFinance
+        ? {
+            include: { plan: true },
+            orderBy: { createdAt: "desc" },
+          }
+        : false,
       clinicalNotes: { orderBy: { createdAt: "desc" } },
-      insuranceDetails: {
-        include: { provider: { select: { id: true, name: true } } },
-        orderBy: { createdAt: "desc" },
-      },
+      insuranceDetails: includeFinance
+        ? {
+            include: { provider: { select: { id: true, name: true } } },
+            orderBy: { createdAt: "desc" },
+          }
+        : false,
     },
   });
   if (!patient) throw new AppError("Patient not found", 404);

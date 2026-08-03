@@ -20,7 +20,7 @@
         <div class="dropdown" role="menu" id="treatments-menu" aria-labelledby="treatments-trigger">
           <% if (services.length) { %>
             <% services.slice(0, 10).forEach(function(service) { %>
-              <a href="/treatments#service-<%= service.id %>" role="menuitem">
+              <a href="/treatments/<%= service.slug %>" role="menuitem">
                 <%= service.title %>
               </a>
             <% }) %>

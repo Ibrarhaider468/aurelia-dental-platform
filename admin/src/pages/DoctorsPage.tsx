@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { adminApi, type Availability, type Doctor } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
+import { hasPermission, PERMISSIONS } from "../lib/permissions";
 import {
   Card,
   EmptyState,
@@ -46,6 +48,17 @@ const emptyAvailability = {
 };
 
 export default function DoctorsPage() {
+  const { user } = useAuth();
+  const canManage = hasPermission(
+    user?.role,
+    PERMISSIONS.DOCTORS_MANAGE,
+    user?.permissions,
+  );
+  const canAvailability = hasPermission(
+    user?.role,
+    PERMISSIONS.AVAILABILITY_OWN,
+    user?.permissions,
+  ) || canManage;
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -191,9 +204,11 @@ export default function DoctorsPage() {
         title="Doctors"
         subtitle="Manage dentist profiles and weekly availability"
         actions={
-          <button type="button" className="btn btn-primary" onClick={openCreate}>
-            Add doctor
-          </button>
+          canManage ? (
+            <button type="button" className="btn btn-primary" onClick={openCreate}>
+              Add doctor
+            </button>
+          ) : null
         }
       />
       <ErrorBanner message={error} onDismiss={() => setError(null)} />
@@ -224,7 +239,7 @@ export default function DoctorsPage() {
                     : "Try a different search term."
                 }
                 action={
-                  doctors.length === 0 ? (
+                  doctors.length === 0 && canManage ? (
                     <button
                       type="button"
                       className="btn btn-primary"
@@ -268,13 +283,15 @@ export default function DoctorsPage() {
                               <span>
                                 {a.day}: {a.startTime}-{a.endTime}
                               </span>
-                              <button
-                                type="button"
-                                className="linkish"
-                                onClick={() => removeAvailability(doctor, a)}
-                              >
-                                Remove
-                              </button>
+                              {canAvailability ? (
+                                <button
+                                  type="button"
+                                  className="linkish"
+                                  onClick={() => removeAvailability(doctor, a)}
+                                >
+                                  Remove
+                                </button>
+                              ) : null}
                             </li>
                           ))}
                         </ul>
@@ -283,27 +300,33 @@ export default function DoctorsPage() {
                       )}
                     </div>
                     <div className="row-actions">
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={() => openAvailability(doctor)}
-                      >
-                        Availability
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-ghost"
-                        onClick={() => openEdit(doctor)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-danger"
-                        onClick={() => removeDoctor(doctor)}
-                      >
-                        Delete
-                      </button>
+                      {canAvailability ? (
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => openAvailability(doctor)}
+                        >
+                          Availability
+                        </button>
+                      ) : null}
+                      {canManage ? (
+                        <button
+                          type="button"
+                          className="btn btn-ghost"
+                          onClick={() => openEdit(doctor)}
+                        >
+                          Edit
+                        </button>
+                      ) : null}
+                      {canManage ? (
+                        <button
+                          type="button"
+                          className="btn btn-danger"
+                          onClick={() => removeDoctor(doctor)}
+                        >
+                          Delete
+                        </button>
+                      ) : null}
                     </div>
                   </article>
                 ))}

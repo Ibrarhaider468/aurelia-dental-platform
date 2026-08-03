@@ -657,20 +657,23 @@ tbody tr:last-child td {
 
 .status-pending,
 .status-rescheduled,
-.status-draft { background: var(--warning-soft); color: var(--warning); }
+.status-draft,
+.status-new { background: var(--warning-soft); color: var(--warning); }
 .status-confirmed,
 .status-paid,
 .status-active,
 .status-verified,
 .status-approved,
-.status-published { background: var(--success-soft); color: var(--success); }
+.status-published,
+.status-replied { background: var(--success-soft); color: var(--success); }
 .status-cancelled,
 .status-failed,
 .status-rejected,
 .status-inactive { background: var(--danger-soft); color: var(--danger); }
 .status-completed,
 .status-refunded,
-.status-expired { background: var(--info-soft); color: var(--info); }
+.status-expired,
+.status-read { background: var(--info-soft); color: var(--info); }
 
 /* ── Layout helpers ── */
 

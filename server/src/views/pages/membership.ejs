@@ -14,32 +14,40 @@
     <% if (!memberships.length) { %>
       <p class="empty-note">No active membership plans yet. Add plans in the admin panel.</p>
     <% } else { %>
-      <div class="membership-grid">
+      <div class="membership-grid<%= memberships.length === 2 ? ' membership-grid--duo' : memberships.length === 1 ? ' membership-grid--solo' : '' %>">
         <% memberships.forEach(function(plan, index) { %>
-          <article class="membership-card<%= index === 1 ? ' featured' : '' %> reveal" id="plan-<%= plan.id %>">
-            <h3><%= plan.name %></h3>
-            <p class="price">
-              <%= helpers.money(plan.price) %>
-              <small>/<%= plan.billingCycle %></small>
-            </p>
-            <p class="muted"><%= plan.durationMonths || 1 %> month duration</p>
-            <% if (plan.description) { %><p><%= plan.description %></p><% } %>
-            <ul>
+          <% const featured = memberships.length === 1 ? true : index === 1; %>
+          <article class="membership-card<%= featured ? ' featured' : '' %> reveal" id="plan-<%= plan.id %>">
+            <div class="membership-card__top">
+              <% if (featured) { %>
+                <span class="membership-card__badge">Most chosen</span>
+              <% } %>
+              <h3><%= plan.name %></h3>
+              <p class="price">
+                <%= helpers.money(plan.price) %>
+                <small>/<%= String(plan.billingCycle || '').toLowerCase() %></small>
+              </p>
+              <p class="membership-card__meta"><%= plan.durationMonths || 1 %>-month plan</p>
+              <% if (plan.description) { %><p class="membership-card__desc"><%= plan.description %></p><% } %>
+            </div>
+            <ul class="membership-card__benefits">
               <% (plan.benefits || []).forEach(function(benefit) { %>
                 <li><%= benefit %></li>
               <% }) %>
             </ul>
             <% if (plan.includedTreatments && plan.includedTreatments.length) { %>
-              <p class="muted small">Included treatments</p>
-              <ul>
-                <% plan.includedTreatments.forEach(function(item) { %>
-                  <li><%= item %></li>
-                <% }) %>
-              </ul>
+              <div class="membership-card__included">
+                <p class="membership-card__meta">Included treatments</p>
+                <ul class="membership-card__benefits membership-card__benefits--compact">
+                  <% plan.includedTreatments.forEach(function(item) { %>
+                    <li><%= item %></li>
+                  <% }) %>
+                </ul>
+              </div>
             <% } %>
             <button
               type="button"
-              class="btn <%= index === 1 ? 'btn-accent' : 'btn-dark' %> membership-subscribe"
+              class="btn <%= featured ? 'btn-accent' : 'btn-dark' %> membership-subscribe membership-card__cta"
               data-plan-id="<%= plan.id %>"
               data-plan-name="<%= plan.name %>"
             >

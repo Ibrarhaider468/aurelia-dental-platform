@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { adminApi, type DashboardData } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
+import { hasPermission, PERMISSIONS } from "../lib/permissions";
 import {
   BarChart,
   Card,
@@ -24,9 +26,25 @@ import {
 } from "../components/ui";
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const canFinance = hasPermission(
+    user?.role,
+    PERMISSIONS.FINANCE_READ,
+    user?.permissions,
+  );
+  const canAppointments = hasPermission(
+    user?.role,
+    PERMISSIONS.APPOINTMENTS_READ,
+    user?.permissions,
+  );
+  const canPayments = hasPermission(
+    user?.role,
+    PERMISSIONS.PAYMENTS_READ,
+    user?.permissions,
+  );
 
   useEffect(() => {
     adminApi
@@ -73,15 +91,23 @@ export default function DashboardPage() {
     <div className="page">
       <PageHeader
         title="Dashboard"
-        subtitle="Live clinic operations and financial performance"
+        subtitle={
+          canFinance
+            ? "Live clinic operations and financial performance"
+            : "Live clinic operations for your access level"
+        }
         actions={
           <div className="page-header__actions">
-            <Link to="/appointments" className="btn btn-ghost">
-              Appointments
-            </Link>
-            <Link to="/payments" className="btn btn-primary">
-              Payments
-            </Link>
+            {canAppointments ? (
+              <Link to="/appointments" className="btn btn-ghost">
+                Appointments
+              </Link>
+            ) : null}
+            {canPayments ? (
+              <Link to="/payments" className="btn btn-primary">
+                Payments
+              </Link>
+            ) : null}
           </div>
         }
       />
@@ -112,12 +138,14 @@ export default function DashboardPage() {
               icon={Users}
               tone="default"
             />
-            <StatCard
-              label="Total revenue"
-              value={money(data.revenue)}
-              icon={CircleDollarSign}
-              tone="success"
-            />
+            {canFinance ? (
+              <StatCard
+                label="Total revenue"
+                value={money(data.revenue)}
+                icon={CircleDollarSign}
+                tone="success"
+              />
+            ) : null}
             <StatCard
               label="Pending requests"
               value={data.pendingRequests}
@@ -129,21 +157,26 @@ export default function DashboardPage() {
               value={data.activeDoctors}
               icon={Stethoscope}
             />
-            <StatCard
-              label="Active memberships"
-              value={data.activeMemberships ?? 0}
-              icon={BadgePercent}
-              tone="accent"
-            />
-            <StatCard
-              label={`${data.finance?.monthLabel || "Month"} revenue`}
-              value={money(data.finance?.monthlyRevenue || 0)}
-              icon={CreditCard}
-              tone="success"
-            />
+            {canFinance ? (
+              <StatCard
+                label="Active memberships"
+                value={data.activeMemberships ?? 0}
+                icon={BadgePercent}
+                tone="accent"
+              />
+            ) : null}
+            {canFinance ? (
+              <StatCard
+                label={`${data.finance?.monthLabel || "Month"} revenue`}
+                value={money(data.finance?.monthlyRevenue || 0)}
+                icon={CreditCard}
+                tone="success"
+              />
+            ) : null}
           </div>
 
           <div className="split-layout">
+            {canFinance ? (
             <Card
               title="Financial analytics"
               subtitle="Revenue composition across payment states"
@@ -171,7 +204,9 @@ export default function DashboardPage() {
                 </div>
               ) : null}
             </Card>
+            ) : null}
 
+            {canFinance ? (
             <Card title="Recent payments" subtitle="Latest settlement activity">
               {(data.finance?.recentPayments || []).length === 0 ? (
                 <p className="muted">No payments yet.</p>
@@ -196,6 +231,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </Card>
+            ) : null}
           </div>
 
           <Card
@@ -203,9 +239,11 @@ export default function DashboardPage() {
             title="Recent appointments"
             subtitle="Newest booking activity across the clinic"
             actions={
-              <Link to="/appointments" className="btn btn-ghost btn-sm">
-                View all
-              </Link>
+              canAppointments ? (
+                <Link to="/appointments" className="btn btn-ghost btn-sm">
+                  View all
+                </Link>
+              ) : null
             }
           >
             {data.recentAppointments.length === 0 ? (

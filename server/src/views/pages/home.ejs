@@ -77,7 +77,7 @@
                 <span><%= service.duration %> min</span>
                 <span>From <%= helpers.money(service.price) %></span>
               </div>
-              <a class="text-link" href="/treatments#service-<%= service.id %>">Learn more</a>
+              <a class="text-link" href="/treatments/<%= service.slug %>">Learn more</a>
             </div>
           </article>
         <% }) %>
@@ -120,7 +120,7 @@
                   <%= doctor.availabilities.map(function(a){ return helpers.formatDay(a.day); }).join(', ') %>
                 </p>
               <% } %>
-              <a class="btn btn-dark" href="/dentists#doctor-<%= doctor.id %>">View profile</a>
+              <a class="btn btn-dark" href="<%= helpers.doctorPath(doctor) %>">View profile</a>
             </div>
           </article>
         <% }) %>
@@ -257,20 +257,26 @@
     <% if (!memberships.length) { %>
       <p class="empty-note reveal">Membership plans will appear once created in admin.</p>
     <% } else { %>
-      <div class="membership-grid">
+      <div class="membership-grid<%= memberships.length === 2 ? ' membership-grid--duo' : memberships.length === 1 ? ' membership-grid--solo' : '' %>">
         <% memberships.forEach(function(plan, index) { %>
-          <article class="membership-card<%= index === 1 ? ' featured' : '' %> reveal">
-            <h3><%= plan.name %></h3>
-            <p class="price">
-              <%= helpers.money(plan.price) %><small>/<%= plan.billingCycle %></small>
-            </p>
-            <% if (plan.description) { %><p class="muted"><%= plan.description %></p><% } %>
-            <ul>
+          <% const featured = memberships.length === 1 ? true : index === 1; %>
+          <article class="membership-card<%= featured ? ' featured' : '' %> reveal">
+            <div class="membership-card__top">
+              <% if (featured) { %>
+                <span class="membership-card__badge">Most chosen</span>
+              <% } %>
+              <h3><%= plan.name %></h3>
+              <p class="price">
+                <%= helpers.money(plan.price) %><small>/<%= String(plan.billingCycle || '').toLowerCase() %></small>
+              </p>
+              <% if (plan.description) { %><p class="membership-card__desc"><%= plan.description %></p><% } %>
+            </div>
+            <ul class="membership-card__benefits">
               <% (plan.benefits || []).forEach(function(benefit) { %>
                 <li><%= benefit %></li>
               <% }) %>
             </ul>
-            <a class="btn <%= index === 1 ? 'btn-accent' : 'btn-dark' %>" href="/membership">View plan details</a>
+            <a class="btn <%= featured ? 'btn-accent' : 'btn-dark' %> membership-card__cta" href="/membership#plan-<%= plan.id %>">View plan details</a>
           </article>
         <% }) %>
       </div>
@@ -340,47 +346,86 @@
 </section>
 
 <section class="section" id="contact">
-  <div class="container contact-layout">
-    <div class="reveal">
+  <div class="container">
+    <div class="section-head reveal">
       <p class="eyebrow">Contact</p>
-      <h2>Visit the clinic</h2>
-      <p class="lead"><%= settings.address || '214 Harbor Lane, Suite 120' %></p>
-      <% if (settings.phone) { %>
-        <p><a href="tel:<%= String(settings.phone).replace(/\s+/g, '') %>"><%= settings.phone %></a></p>
-      <% } %>
-      <% if (settings.email) { %>
-        <p><a href="mailto:<%= settings.email %>"><%= settings.email %></a></p>
-      <% } %>
-      <% if (settings.openingHours) { %>
-        <ul class="hours-list">
-          <% Object.entries(settings.openingHours).forEach(function([day, hours]) { %>
-            <li><span><%= day %></span><span><%= hours %></span></li>
-          <% }) %>
-        </ul>
-      <% } %>
-      <div class="contact-actions">
-        <a class="btn btn-accent" href="/book">Book Appointment</a>
-        <a class="btn btn-light-dark" href="mailto:<%= settings.email || 'hello@aureliadental.com' %>">Email the clinic</a>
-      </div>
+      <h2>Visit or send a message</h2>
+      <p class="lead">Reach the clinic team for enquiries, treatment questions, or appointment support.</p>
     </div>
-    <div class="map-panel reveal">
-      <% if (settings.mapEmbedUrl) { %>
-        <iframe
-          src="<%= settings.mapEmbedUrl %>"
-          title="Clinic map"
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-          allowfullscreen
-        ></iframe>
-      <% } else { %>
-        <div class="map-placeholder">
-          <div>
-            <p class="eyebrow" style="margin-bottom: 0.5rem;">Location</p>
-            <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Harbor Lane clinic</h3>
-            <p>Map embed can be added in admin settings. Until then, visit us at the address listed.</p>
-          </div>
+
+    <div class="contact-layout">
+      <div class="reveal">
+        <h3 style="font-size: 1.8rem; margin-bottom: 0.75rem;">Clinic details</h3>
+        <p class="lead" style="margin-top: 0;"><%= settings.address || '214 Harbor Lane, Suite 120' %></p>
+        <% if (settings.phone) { %>
+          <p><a href="tel:<%= String(settings.phone).replace(/\s+/g, '') %>"><%= settings.phone %></a></p>
+        <% } %>
+        <% if (settings.email) { %>
+          <p><a href="mailto:<%= settings.email %>"><%= settings.email %></a></p>
+        <% } %>
+        <% if (settings.openingHours) { %>
+          <ul class="hours-list">
+            <% Object.entries(settings.openingHours).forEach(function([day, hours]) { %>
+              <li><span><%= day %></span><span><%= hours %></span></li>
+            <% }) %>
+          </ul>
+        <% } %>
+        <div class="contact-actions">
+          <a class="btn btn-accent" href="/book">Book Appointment</a>
         </div>
-      <% } %>
+
+        <div class="map-panel" style="margin-top: 1.5rem;">
+          <% if (settings.mapEmbedUrl) { %>
+            <iframe
+              src="<%= settings.mapEmbedUrl %>"
+              title="Clinic map"
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              allowfullscreen
+            ></iframe>
+          <% } else { %>
+            <div class="map-placeholder">
+              <div>
+                <p class="eyebrow" style="margin-bottom: 0.5rem;">Location</p>
+                <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;">Harbor Lane clinic</h3>
+                <p>Map embed can be added in admin settings. Until then, visit us at the address listed.</p>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="contact-form-card reveal">
+        <h3>Send an enquiry</h3>
+        <p class="muted">We typically respond within one business day.</p>
+        <form id="contact-form" class="contact-form" novalidate>
+          <label class="field">
+            <span>Name</span>
+            <input type="text" name="name" required maxlength="120" autocomplete="name" placeholder="Your full name" />
+          </label>
+          <div class="form-grid-2">
+            <label class="field">
+              <span>Email</span>
+              <input type="email" name="email" required maxlength="254" autocomplete="email" placeholder="you@email.com" />
+            </label>
+            <label class="field">
+              <span>Phone</span>
+              <input type="tel" name="phone" required maxlength="40" autocomplete="tel" placeholder="+1 555 0100" />
+            </label>
+          </div>
+          <label class="field">
+            <span>Subject</span>
+            <input type="text" name="subject" required maxlength="160" placeholder="How can we help?" />
+          </label>
+          <label class="field">
+            <span>Message</span>
+            <textarea name="message" required maxlength="5000" rows="5" placeholder="Share a few details about your enquiry."></textarea>
+          </label>
+          <p class="form-error" id="contact-error" role="alert" aria-live="assertive" hidden></p>
+          <p class="form-success" id="contact-success" role="status" aria-live="polite" hidden></p>
+          <button type="submit" class="btn btn-dark" id="contact-submit">Send message</button>
+        </form>
+      </div>
     </div>
   </div>
 </section>

@@ -20,14 +20,14 @@ async function main() {
     where: { email: adminEmail },
     update: {
       name: adminName,
-      role: "ADMIN",
+      role: "SUPER_ADMIN",
       isActive: true,
     },
     create: {
       name: adminName,
       email: adminEmail,
       password,
-      role: "ADMIN",
+      role: "SUPER_ADMIN",
     },
   });
 
@@ -55,6 +55,7 @@ async function main() {
       seoTitle: "Aurelia Dental | Premium Dental Clinic",
       seoDescription:
         "Luxury dental care including implants, Invisalign, veneers, whitening, smile makeovers, and family dentistry.",
+      whatsappNumber: "+15550192840",
       socialLinks: {
         instagram: "https://instagram.com/",
         facebook: "https://facebook.com/",
@@ -84,6 +85,7 @@ async function main() {
       seoTitle: "Aurelia Dental | Premium Dental Clinic",
       seoDescription:
         "Luxury dental care including implants, Invisalign, veneers, whitening, smile makeovers, and family dentistry.",
+      whatsappNumber: "+15550192840",
       socialLinks: {
         instagram: "https://instagram.com/",
         facebook: "https://facebook.com/",
@@ -178,6 +180,64 @@ async function main() {
         },
       },
     });
+  }
+
+  const roleUsers = [
+    {
+      email: "staff@aureliadental.com",
+      name: "Clinic Staff",
+      role: "STAFF",
+      password: "Staff123!",
+    },
+    {
+      email: "finance@aureliadental.com",
+      name: "Finance Manager",
+      role: "FINANCE_MANAGER",
+      password: "Finance123!",
+    },
+    {
+      email: "doctor@aureliadental.com",
+      name: "Dr. Elena Hart",
+      role: "DOCTOR",
+      password: "Doctor123!",
+      linkDoctorName: "Dr. Elena Hart",
+    },
+  ];
+
+  for (const account of roleUsers) {
+    const hashed = await bcrypt.hash(account.password, 12);
+    const user = await prisma.user.upsert({
+      where: { email: account.email },
+      update: {
+        name: account.name,
+        role: account.role,
+        isActive: true,
+        password: hashed,
+      },
+      create: {
+        name: account.name,
+        email: account.email,
+        role: account.role,
+        password: hashed,
+        isActive: true,
+      },
+    });
+
+    if (account.linkDoctorName) {
+      const doctor = await prisma.doctor.findFirst({
+        where: { name: account.linkDoctorName },
+      });
+      if (doctor) {
+        await prisma.doctor.updateMany({
+          where: { userId: user.id, id: { not: doctor.id } },
+          data: { userId: null },
+        });
+        await prisma.doctor.update({
+          where: { id: doctor.id },
+          data: { userId: user.id },
+        });
+      }
+    }
   }
 
   const serviceSeeds = [
@@ -469,8 +529,10 @@ async function main() {
   }
 
   console.log("Seed complete:");
-  console.log(`  Admin: ${admin.email}`);
-  console.log(`  Password: ${adminPassword}`);
+  console.log(`  SUPER_ADMIN: ${admin.email} / ${adminPassword}`);
+  console.log("  STAFF: staff@aureliadental.com / Staff123!");
+  console.log("  FINANCE_MANAGER: finance@aureliadental.com / Finance123!");
+  console.log("  DOCTOR: doctor@aureliadental.com / Doctor123! (linked to Dr. Elena Hart)");
   console.log(`  Doctors: ${await prisma.doctor.count()}`);
   console.log(`  Services: ${await prisma.service.count()}`);
   console.log(`  Gallery: ${await prisma.gallery.count()}`);

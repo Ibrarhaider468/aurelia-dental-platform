@@ -4,6 +4,7 @@ import { getAvailableSlots } from "../services/slot.service.js";
 import * as membershipService from "../services/membership.service.js";
 import * as insuranceService from "../services/insurance.service.js";
 import { getGatewayConfig } from "../services/paymentGateway.service.js";
+import * as contactService from "../services/contact.service.js";
 
 const ok = (res, data, message = "OK", status = 200) =>
   res.status(status).json({ success: true, message, data });
@@ -56,4 +57,13 @@ export const listInsuranceProviders = asyncHandler(async (_req, res) => {
 
 export const paymentOptions = asyncHandler(async (_req, res) => {
   ok(res, getGatewayConfig());
+});
+
+export const createContactMessage = asyncHandler(async (req, res) => {
+  ok(
+    res,
+    await contactService.createContactMessage(req.body),
+    "Message sent successfully",
+    201,
+  );
 });

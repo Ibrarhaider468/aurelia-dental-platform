@@ -198,6 +198,18 @@ export const settingsSchema = z.object({
   heroSubtitle: z.string().optional().nullable(),
   aboutContent: z.string().optional().nullable(),
   mapEmbedUrl: z.string().optional().nullable(),
+  whatsappNumber: z
+    .string()
+    .max(40)
+    .regex(/^[+\d\s()-]*$/, "Use digits and optional + ( ) - spaces only")
+    .optional()
+    .nullable()
+    .or(z.literal("")),
+  smtpHost: z.string().max(200).optional().nullable().or(z.literal("")),
+  smtpPort: z.coerce.number().int().min(1).max(65535).optional().nullable(),
+  smtpUser: z.string().max(200).optional().nullable().or(z.literal("")),
+  smtpPass: z.string().max(500).optional().nullable().or(z.literal("")),
+  mailFrom: z.string().max(200).optional().nullable().or(z.literal("")),
 });
 
 export const faqSchema = z.object({
@@ -205,4 +217,35 @@ export const faqSchema = z.object({
   answer: z.string().min(5),
   isActive: z.boolean().optional(),
   sortOrder: z.coerce.number().int().optional(),
+});
+
+export const contactStatusSchema = z.object({
+  status: z.enum(["NEW", "READ", "REPLIED"]),
+});
+
+export const userCreateSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(8)
+    .regex(/[A-Z]/, "Password must include an uppercase letter")
+    .regex(/[0-9]/, "Password must include a number"),
+  role: z.enum(["SUPER_ADMIN", "STAFF", "FINANCE_MANAGER", "DOCTOR"]),
+  isActive: z.boolean().optional(),
+  doctorId: z.string().min(1).optional().nullable(),
+});
+
+export const userUpdateSchema = z.object({
+  name: z.string().min(2).optional(),
+  email: z.string().email().optional(),
+  password: z
+    .string()
+    .min(8)
+    .regex(/[A-Z]/, "Password must include an uppercase letter")
+    .regex(/[0-9]/, "Password must include a number")
+    .optional(),
+  role: z.enum(["SUPER_ADMIN", "STAFF", "FINANCE_MANAGER", "DOCTOR"]).optional(),
+  isActive: z.boolean().optional(),
+  doctorId: z.string().min(1).optional().nullable(),
 });

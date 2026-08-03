@@ -56,8 +56,14 @@ export default function SettingsPage() {
         email: settings.email,
         address: settings.address,
         logo: settings.logo,
+        whatsappNumber: settings.whatsappNumber || null,
         openingHours: hours,
         socialLinks: social,
+        smtpHost: settings.smtpHost || null,
+        smtpPort: settings.smtpPort ? Number(settings.smtpPort) : null,
+        smtpUser: settings.smtpUser || null,
+        smtpPass: settings.smtpPass || null,
+        mailFrom: settings.mailFrom || null,
       });
       setSettings(updated);
       setSuccess("Settings saved");
@@ -117,6 +123,18 @@ export default function SettingsPage() {
                   }
                 />
               </Field>
+              <Field
+                label="WhatsApp number"
+                hint="International format recommended, e.g. +15550192840. Powers the public site chat button."
+              >
+                <input
+                  value={settings.whatsappNumber || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, whatsappNumber: e.target.value })
+                  }
+                  placeholder="+15550192840"
+                />
+              </Field>
               <Field label="Email">
                 <input
                   value={settings.email || ""}
@@ -170,6 +188,80 @@ export default function SettingsPage() {
                   />
                 </Field>
               ))}
+            </div>
+          </Card>
+
+          <Card
+            title="Email / SMTP"
+            subtitle="Used for booking confirmations, contact acknowledgements, and appointment reminders. Leave blank to use server environment variables."
+          >
+            <div className="form-grid">
+              <Field label="SMTP host">
+                <input
+                  value={settings.smtpHost || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, smtpHost: e.target.value })
+                  }
+                  placeholder="smtp.example.com"
+                />
+              </Field>
+              <Field label="SMTP port">
+                <input
+                  type="number"
+                  value={settings.smtpPort ?? ""}
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      smtpPort: e.target.value
+                        ? Number(e.target.value)
+                        : null,
+                    })
+                  }
+                  placeholder="587"
+                />
+              </Field>
+              <Field label="SMTP user">
+                <input
+                  value={settings.smtpUser || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, smtpUser: e.target.value })
+                  }
+                  placeholder="clinic@example.com"
+                />
+              </Field>
+              <Field
+                label="SMTP password"
+                hint="Shown as ******** if already saved. Leave unchanged to keep the current password."
+              >
+                <input
+                  type="password"
+                  value={settings.smtpPass || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, smtpPass: e.target.value })
+                  }
+                  placeholder="********"
+                  autoComplete="new-password"
+                />
+              </Field>
+              <Field label="Sender email (From)">
+                <input
+                  value={settings.mailFrom || ""}
+                  onChange={(e) =>
+                    setSettings({ ...settings, mailFrom: e.target.value })
+                  }
+                  placeholder="Aurelia Dental <noreply@aureliadental.com>"
+                />
+              </Field>
+              <Field label="Status">
+                <input
+                  readOnly
+                  value={
+                    settings.smtpConfigured
+                      ? "SMTP configured in settings"
+                      : "Using environment SMTP (or logging in development)"
+                  }
+                />
+              </Field>
               <FormActions
                 onCancel={() => window.location.reload()}
                 saving={saving}

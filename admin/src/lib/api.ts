@@ -53,9 +53,22 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
-  role: "ADMIN" | "STAFF" | "DOCTOR";
+  role: "SUPER_ADMIN" | "STAFF" | "FINANCE_MANAGER" | "DOCTOR" | "ADMIN";
   isActive?: boolean;
   doctorId?: string | null;
+  permissions?: string[];
+};
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: AuthUser["role"];
+  isActive: boolean;
+  doctorId?: string | null;
+  doctor?: { id: string; name: string } | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 export const adminApi = {
@@ -312,6 +325,44 @@ export const adminApi = {
     remove: (id: string) =>
       api<{ message: string }>(`/admin/faqs/${id}`, { method: "DELETE" }),
   },
+  contactMessages: {
+    list: (params?: { search?: string; status?: string }) => {
+      const query = new URLSearchParams();
+      if (params?.search) query.set("search", params.search);
+      if (params?.status) query.set("status", params.status);
+      const suffix = query.toString() ? `?${query}` : "";
+      return api<ContactMessage[]>(`/admin/contact-messages${suffix}`);
+    },
+    get: (id: string) => api<ContactMessage>(`/admin/contact-messages/${id}`),
+    updateStatus: (id: string, status: string) =>
+      api<ContactMessage>(`/admin/contact-messages/${id}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ status }),
+      }),
+    remove: (id: string) =>
+      api<{ message: string }>(`/admin/contact-messages/${id}`, {
+        method: "DELETE",
+      }),
+  },
+  users: {
+    list: (search?: string) =>
+      api<AdminUser[]>(
+        `/admin/users${search ? `?search=${encodeURIComponent(search)}` : ""}`,
+      ),
+    get: (id: string) => api<AdminUser>(`/admin/users/${id}`),
+    create: (body: Record<string, unknown>) =>
+      api<AdminUser>("/admin/users", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    update: (id: string, body: Record<string, unknown>) =>
+      api<AdminUser>(`/admin/users/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    remove: (id: string) =>
+      api<{ message: string }>(`/admin/users/${id}`, { method: "DELETE" }),
+  },
 };
 
 export type FinanceStats = {
@@ -548,6 +599,13 @@ export type Settings = {
   heroSubtitle?: string | null;
   aboutContent?: string | null;
   mapEmbedUrl?: string | null;
+  whatsappNumber?: string | null;
+  smtpHost?: string | null;
+  smtpPort?: number | null;
+  smtpUser?: string | null;
+  smtpPass?: string | null;
+  mailFrom?: string | null;
+  smtpConfigured?: boolean;
 };
 
 export type Faq = {
@@ -556,4 +614,16 @@ export type Faq = {
   answer: string;
   isActive: boolean;
   sortOrder: number;
+};
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  status: "NEW" | "READ" | "REPLIED" | string;
+  createdAt: string;
+  updatedAt: string;
 };

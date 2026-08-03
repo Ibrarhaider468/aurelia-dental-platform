@@ -10,6 +10,11 @@ import {
   sanitizeString,
   toDateOnlyUTC,
 } from "../utils/sanitize.js";
+import {
+  getTreatmentPresentation,
+  relatedDoctorsForService,
+} from "../utils/treatmentContent.js";
+import { slugify } from "../utils/slug.js";
 
 const METHOD_LABELS = {
   PRIVATE: "Private payment",
@@ -139,6 +144,33 @@ export async function listPublicDoctors() {
     },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   });
+}
+
+export async function getPublicServiceBySlug(slug) {
+  const service = await prisma.service.findFirst({
+    where: { slug, isActive: true },
+  });
+  if (!service) throw new AppError("Treatment not found", 404);
+
+  const doctors = await listPublicDoctors();
+  const presentation = getTreatmentPresentation(service);
+
+  return {
+    service,
+    ...presentation,
+    relatedDoctors: relatedDoctorsForService(service, doctors),
+  };
+}
+
+export async function getPublicDoctorBySlug(slug) {
+  const doctors = await listPublicDoctors();
+  const doctor = doctors.find((d) => slugify(d.name) === slug) || null;
+  if (!doctor) throw new AppError("Dentist not found", 404);
+  return doctor;
+}
+
+export function publicDoctorPath(doctor) {
+  return `/dentists/${slugify(doctor.name)}`;
 }
 
 export async function getDoctorAvailabilityDays(doctorId) {

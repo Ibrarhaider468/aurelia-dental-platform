@@ -37,7 +37,10 @@
                   <%= doctor.availabilities.map(function(a){ return helpers.formatDay(a.day); }).join(', ') %>
                 </p>
               <% } %>
-              <a class="btn btn-dark" href="/book?doctorId=<%= doctor.id %>">View availability &amp; book</a>
+              <div class="treatment-actions">
+                <a class="btn btn-dark" href="<%= helpers.doctorPath(doctor) %>">View profile</a>
+                <a class="text-link" href="/book?doctorId=<%= doctor.id %>">Book</a>
+              </div>
             </div>
           </article>
         <% }) %>

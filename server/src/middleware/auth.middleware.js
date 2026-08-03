@@ -2,6 +2,11 @@ import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
 import { verifyAccessToken } from "../services/token.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import {
+  hasPermission,
+  normalizeRole,
+  permissionsForRole,
+} from "../constants/roles.js";
 
 export const authenticate = asyncHandler(async (req, _res, next) => {
   const header = req.headers.authorization;
@@ -27,24 +32,69 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
     throw new AppError("Authentication required", 401);
   }
 
+  const role = normalizeRole(user.role);
+
   req.user = {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role,
+    role,
     doctorId: user.doctor?.id ?? null,
+    permissions: permissionsForRole(role),
   };
 
   next();
 });
 
 export function authorize(...roles) {
+  const allowed = roles.map(normalizeRole);
   return (req, _res, next) => {
     if (!req.user) {
       return next(new AppError("Authentication required", 401));
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!allowed.includes(normalizeRole(req.user.role))) {
+      return next(new AppError("You do not have permission for this action", 403));
+    }
+
+    return next();
+  };
+}
+
+export function requirePermission(...permissions) {
+  return (req, _res, next) => {
+    if (!req.user) {
+      return next(new AppError("Authentication required", 401));
+    }
+
+    const ok = permissions.some((permission) =>
+      hasPermission(req.user.role, permission),
+    );
+
+    if (!ok) {
+      return next(new AppError("You do not have permission for this action", 403));
+    }
+
+    return next();
+  };
+}
+
+/** Ensures DOCTOR users only touch their linked doctor profile. */
+export function requireOwnDoctorParam(paramName = "id") {
+  return (req, _res, next) => {
+    if (!req.user) {
+      return next(new AppError("Authentication required", 401));
+    }
+
+    if (normalizeRole(req.user.role) !== "DOCTOR") {
+      return next();
+    }
+
+    if (!req.user.doctorId) {
+      return next(new AppError("Doctor profile is not linked to this account", 403));
+    }
+
+    if (req.params[paramName] !== req.user.doctorId) {
       return next(new AppError("You do not have permission for this action", 403));
     }
 

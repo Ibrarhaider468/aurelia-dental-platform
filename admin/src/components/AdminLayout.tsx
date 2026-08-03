@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   CalendarClock,
@@ -16,10 +16,18 @@ import {
   FilePenLine,
   Sparkles,
   Percent,
+  Inbox,
+  UserCog,
   X,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { initials } from "./ui";
+import {
+  canAccessPath,
+  hasPermission,
+  PERMISSIONS,
+  roleLabel,
+} from "../lib/permissions";
 
 const sections = [
   {
@@ -50,8 +58,13 @@ const sections = [
       { to: "/gallery", label: "Gallery", icon: GalleryHorizontalEnd },
       { to: "/testimonials", label: "Testimonials", icon: MessageSquareQuote },
       { to: "/cms", label: "Website CMS", icon: FilePenLine },
+      { to: "/contact-messages", label: "Contact Messages", icon: Inbox },
       { to: "/settings", label: "Settings", icon: Settings },
     ],
+  },
+  {
+    label: "Administration",
+    items: [{ to: "/users", label: "Users", icon: UserCog }],
   },
 ];
 
@@ -59,6 +72,17 @@ export default function AdminLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  const visibleSections = useMemo(() => {
+    return sections
+      .map((section) => ({
+        ...section,
+        items: section.items.filter((item) =>
+          canAccessPath(item.to, user?.role, user?.permissions),
+        ),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [user?.role, user?.permissions]);
 
   useEffect(() => {
     setOpen(false);
@@ -115,7 +139,7 @@ export default function AdminLayout() {
         </div>
 
         <nav className="sidebar__nav" aria-label="Admin">
-          {sections.map((section) => (
+          {visibleSections.map((section) => (
             <div key={section.label}>
               <div className="nav-section">{section.label}</div>
               {section.items.map(({ to, label, icon: Icon }) => (
@@ -142,7 +166,14 @@ export default function AdminLayout() {
             </div>
             <div>
               <strong>{user?.name}</strong>
-              <span>{user?.role}</span>
+              <span>{roleLabel(user?.role)}</span>
+              {hasPermission(
+                user?.role,
+                PERMISSIONS.AVAILABILITY_OWN,
+                user?.permissions,
+              ) && user?.doctorId ? (
+                <small>Scoped doctor access</small>
+              ) : null}
             </div>
           </div>
           <button type="button" className="btn btn-ghost" onClick={logout}>

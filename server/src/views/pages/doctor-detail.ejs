@@ -1,0 +1,88 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="page-hero doctor-detail-hero">
+  <div class="container doctor-detail-hero__grid">
+    <div class="doctor-detail-portrait reveal">
+      <% if (doctor.image) { %>
+        <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="eager" decoding="async" width="720" height="900" />
+      <% } else { %>
+        <div class="media-fallback doctor-fallback"></div>
+      <% } %>
+    </div>
+    <div class="doctor-detail-intro reveal">
+      <p class="eyebrow">Dentist</p>
+      <h1><%= doctor.name %></h1>
+      <p class="doctor-spec doctor-detail-spec"><%= doctor.specialization || 'General Dentistry' %></p>
+      <p class="muted">
+        <%= doctor.qualification || 'DDS' %><% if (doctor.experience != null) { %> · <%= doctor.experience %> years experience<% } %>
+      </p>
+      <p class="lead" style="margin-top: 1.25rem;"><%= doctor.bio || 'Dedicated to calm, precise dental care with a patient-first approach.' %></p>
+      <div class="detail-hero__actions" style="margin-top: 1.75rem;">
+        <a class="btn btn-accent" href="/book?doctorId=<%= doctor.id %>">Book with <%= doctor.name.split(' ').slice(-1)[0] %></a>
+        <a class="btn btn-dark" href="/dentists">All dentists</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container detail-layout detail-layout--doctor">
+    <div class="detail-main">
+      <div class="section-head reveal">
+        <p class="eyebrow">Biography</p>
+        <h2>Clinical approach</h2>
+      </div>
+      <p class="reveal detail-copy">
+        <%= doctor.bio || 'Dedicated to calm, precise dental care with a patient-first approach.' %>
+      </p>
+
+      <div class="doctor-fact-grid reveal">
+        <article>
+          <span class="eyebrow">Qualification</span>
+          <strong><%= doctor.qualification || 'DDS' %></strong>
+        </article>
+        <article>
+          <span class="eyebrow">Specialization</span>
+          <strong><%= doctor.specialization || 'General Dentistry' %></strong>
+        </article>
+        <article>
+          <span class="eyebrow">Experience</span>
+          <strong><% if (doctor.experience != null) { %><%= doctor.experience %> years<% } else { %>Experienced clinician<% } %></strong>
+        </article>
+      </div>
+    </div>
+
+    <aside class="detail-aside reveal">
+      <div class="detail-cta-card">
+        <p class="eyebrow">Availability</p>
+        <h3>Weekly clinic days</h3>
+        <% if (doctor.availabilities && doctor.availabilities.length) { %>
+          <ul class="availability-list">
+            <% doctor.availabilities.forEach(function(slot) { %>
+              <li>
+                <strong><%= helpers.formatDay(slot.day) %></strong>
+                <span><%= slot.startTime %> – <%= slot.endTime %><% if (slot.breakStart && slot.breakEnd) { %> · break <%= slot.breakStart %>–<%= slot.breakEnd %><% } %></span>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p class="muted">Availability is confirmed during booking. Contact the clinic for the latest schedule.</p>
+        <% } %>
+        <a class="btn btn-accent" href="/book?doctorId=<%= doctor.id %>">Book appointment</a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="section section-ink">
+  <div class="container cta-band reveal">
+    <div>
+      <p class="eyebrow">Appointments</p>
+      <h2>Reserve a visit with <%= doctor.name %></h2>
+    </div>
+    <a class="btn btn-accent" href="/book?doctorId=<%= doctor.id %>">View times &amp; book</a>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

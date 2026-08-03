@@ -2,17 +2,20 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
 import { signAccessToken } from "./token.service.js";
+import { normalizeRole, permissionsForRole } from "../constants/roles.js";
 
 const SALT_ROUNDS = 12;
 
 function sanitizeUser(user) {
+  const role = normalizeRole(user.role);
   return {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: user.role,
+    role,
     isActive: user.isActive,
     doctorId: user.doctor?.id ?? null,
+    permissions: permissionsForRole(role),
     createdAt: user.createdAt,
   };
 }
@@ -34,13 +37,14 @@ export async function registerUser({ name, email, password, role = "STAFF" }) {
     include: { doctor: true },
   });
 
+  const sanitized = sanitizeUser(user);
   const token = signAccessToken({
     sub: user.id,
-    role: user.role,
+    role: sanitized.role,
     email: user.email,
   });
 
-  return { user: sanitizeUser(user), token };
+  return { user: sanitized, token };
 }
 
 export async function loginUser({ email, password }) {
@@ -58,13 +62,14 @@ export async function loginUser({ email, password }) {
     throw new AppError("Invalid email or password", 401);
   }
 
+  const sanitized = sanitizeUser(user);
   const token = signAccessToken({
     sub: user.id,
-    role: user.role,
+    role: sanitized.role,
     email: user.email,
   });
 
-  return { user: sanitizeUser(user), token };
+  return { user: sanitized, token };
 }
 
 export async function getUserById(id) {

@@ -3,7 +3,10 @@ import * as publicService from "../services/public.service.js";
 import {
   buildPageSeo,
   dentalClinicJsonLd,
+  physicianJsonLd,
+  serviceJsonLd,
 } from "../utils/seo.js";
+import { slugify } from "../utils/slug.js";
 
 function money(value) {
   return new Intl.NumberFormat("en-US", {
@@ -17,16 +20,24 @@ function formatDay(day) {
   return day.charAt(0) + day.slice(1).toLowerCase();
 }
 
-function pageLocals(req, data, page, seoInput) {
+function pageLocals(req, data, page, seoInput, extras = {}) {
   const seo = buildPageSeo(seoInput);
   return {
     page,
     ...data,
     ...seo,
-    structuredData: dentalClinicJsonLd(data.settings),
-    helpers: { money, formatDay },
+    structuredData:
+      extras.structuredData !== undefined
+        ? extras.structuredData
+        : dentalClinicJsonLd(data.settings),
+    helpers: {
+      money,
+      formatDay,
+      doctorPath: publicService.publicDoctorPath,
+    },
     query: req.query,
     currentPath: seoInput.path || "/",
+    ...extras,
   };
 }
 
@@ -77,6 +88,41 @@ export const renderTreatments = asyncHandler(async (req, res) => {
   );
 });
 
+export const renderTreatmentDetail = asyncHandler(async (req, res) => {
+  const data = await publicService.getWebsiteData();
+  const detail = await publicService.getPublicServiceBySlug(req.params.slug);
+  const clinic = data.settings.clinicName || "Aurelia Dental";
+  const { service, benefits, steps, faqs, relatedDoctors } = detail;
+  const description =
+    service.description.length > 155
+      ? `${service.description.slice(0, 152).trim()}…`
+      : service.description;
+
+  res.render(
+    "pages/treatment-detail",
+    pageLocals(
+      req,
+      data,
+      "treatment-detail",
+      {
+        title: `${service.title} | ${clinic}`,
+        description,
+        path: `/treatments/${service.slug}`,
+        image: service.image || undefined,
+        type: "article",
+      },
+      {
+        service,
+        benefits,
+        steps,
+        faqs,
+        relatedDoctors,
+        structuredData: serviceJsonLd(service, data.settings, { faqs }),
+      },
+    ),
+  );
+});
+
 export const renderDoctors = asyncHandler(async (req, res) => {
   const data = await publicService.getWebsiteData();
   const clinic = data.settings.clinicName || "Aurelia Dental";
@@ -88,6 +134,39 @@ export const renderDoctors = asyncHandler(async (req, res) => {
         "Meet our dentists, specialties, and clinic availability for your next visit.",
       path: "/dentists",
     }),
+  );
+});
+
+export const renderDoctorDetail = asyncHandler(async (req, res) => {
+  const data = await publicService.getWebsiteData();
+  const doctor = await publicService.getPublicDoctorBySlug(req.params.slug);
+  const clinic = data.settings.clinicName || "Aurelia Dental";
+  const slug = slugify(doctor.name);
+  const description =
+    doctor.bio ||
+    `${doctor.name} — ${doctor.specialization || "Dentistry"} at ${clinic}. Book an appointment online.`;
+
+  res.render(
+    "pages/doctor-detail",
+    pageLocals(
+      req,
+      data,
+      "doctor-detail",
+      {
+        title: `${doctor.name} | ${clinic}`,
+        description:
+          description.length > 155
+            ? `${description.slice(0, 152).trim()}…`
+            : description,
+        path: `/dentists/${slug}`,
+        image: doctor.image || undefined,
+        type: "profile",
+      },
+      {
+        doctor,
+        structuredData: physicianJsonLd(doctor, data.settings),
+      },
+    ),
   );
 });
 

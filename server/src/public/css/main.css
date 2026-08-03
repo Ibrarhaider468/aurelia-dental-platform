@@ -821,17 +821,53 @@ p {
 
 .membership-grid {
   display: grid;
-  gap: 1.15rem;
+  gap: 1.35rem;
+  align-items: stretch;
+}
+
+.membership-grid--duo,
+.membership-grid--solo {
+  width: min(100%, 920px);
+  margin-inline: auto;
+}
+
+.membership-grid--solo {
+  width: min(100%, 440px);
 }
 
 .membership-card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.75rem 1.6rem;
+  padding: 2rem 1.75rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 100%;
+  height: 100%;
+  box-shadow: var(--shadow-sm);
+}
+
+.membership-card__top {
   display: grid;
-  gap: 1rem;
-  align-content: start;
+  gap: 0.65rem;
+}
+
+.membership-card__badge {
+  justify-self: start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-deep);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+}
+
+.membership-card.featured .membership-card__badge {
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .membership-card.featured {
@@ -842,19 +878,24 @@ p {
 }
 
 .membership-card.featured .muted,
-.membership-card.featured li {
+.membership-card.featured li,
+.membership-card.featured .membership-card__desc,
+.membership-card.featured .membership-card__meta {
   color: rgba(255, 255, 255, 0.72);
 }
 
 .membership-card h3 {
-  font-size: 1.9rem;
+  font-size: clamp(1.7rem, 2vw, 2.05rem);
+  margin: 0;
+  line-height: 1.15;
 }
 
 .price {
   font-family: var(--display);
-  font-size: 3rem;
+  font-size: clamp(2.6rem, 4vw, 3.2rem);
   letter-spacing: -0.04em;
   line-height: 1;
+  margin: 0.15rem 0 0;
 }
 
 .price small {
@@ -862,17 +903,40 @@ p {
   font-size: 0.95rem;
   font-weight: 500;
   color: var(--text);
-  margin-left: 0.25rem;
+  margin-left: 0.3rem;
 }
 
 .membership-card.featured .price small {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.membership-card ul {
+.membership-card__desc,
+.membership-card__meta {
+  margin: 0;
+  color: var(--text);
+}
+
+.membership-card__meta {
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.membership-card__benefits {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  gap: 0.7rem;
+  flex: 1;
+}
+
+.membership-card__benefits--compact {
+  gap: 0.45rem;
+}
+
+.membership-card__included {
   display: grid;
   gap: 0.65rem;
 }
@@ -881,6 +945,7 @@ p {
   padding-left: 1.2rem;
   position: relative;
   color: var(--text);
+  line-height: 1.45;
 }
 
 .membership-card li::before {
@@ -892,6 +957,12 @@ p {
   height: 0.45rem;
   border-radius: 50%;
   background: var(--accent);
+}
+
+.membership-card__cta {
+  width: 100%;
+  margin-top: auto;
+  justify-content: center;
 }
 
 /* Simple grids / insurance / payments */
@@ -1006,6 +1077,30 @@ p {
 .contact-layout {
   display: grid;
   gap: 2rem;
+}
+
+.contact-form-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.75rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.contact-form-card h3 {
+  font-size: 1.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.contact-form {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.contact-form .btn {
+  margin-top: 0.5rem;
+  justify-self: start;
 }
 
 .hours-list {
@@ -1340,6 +1435,67 @@ p {
   padding: 1.25rem;
 }
 
+/* WhatsApp floating button */
+
+.whatsapp-float {
+  position: fixed;
+  right: 1.15rem;
+  bottom: 1.15rem;
+  z-index: 45;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 3.4rem;
+  padding: 0.7rem 1rem 0.7rem 0.85rem;
+  border-radius: 999px;
+  background: #25d366;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.92rem;
+  box-shadow: 0 14px 34px rgba(37, 211, 102, 0.35);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.whatsapp-float:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(37, 211, 102, 0.42);
+  color: #fff;
+}
+
+.whatsapp-float__icon {
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+.whatsapp-float__label {
+  padding-right: 0.15rem;
+}
+
+@media (max-width: 719px) {
+  .whatsapp-float {
+    right: 0.9rem;
+    bottom: 0.9rem;
+    min-height: 3.25rem;
+    padding: 0.75rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    justify-content: center;
+  }
+
+  .whatsapp-float__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+}
+
 /* Reveal */
 
 .reveal {
@@ -1372,6 +1528,14 @@ p {
   .simple-grid,
   .tech-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .membership-grid--duo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .membership-grid--solo {
+    grid-template-columns: 1fr;
   }
 
   .treatment-item {
@@ -1427,9 +1591,16 @@ p {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .testimonials-grid,
-  .membership-grid {
+  .testimonials-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .membership-grid:not(.membership-grid--duo):not(.membership-grid--solo) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .membership-grid--duo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .journey-list {
@@ -1474,5 +1645,272 @@ p {
   .treatment-item:hover,
   .option-card:hover {
     transform: none;
+  }
+}
+
+/* Treatment & doctor detail pages */
+
+.detail-hero {
+  position: relative;
+  min-height: clamp(28rem, 68vh, 38rem);
+  display: grid;
+  align-items: end;
+  color: var(--white);
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.detail-hero__media {
+  position: absolute;
+  inset: 0;
+}
+
+.detail-hero__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-hero__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(20, 24, 22, 0.25) 0%, rgba(20, 24, 22, 0.78) 72%, rgba(20, 24, 22, 0.92) 100%),
+    linear-gradient(90deg, rgba(20, 24, 22, 0.55), transparent 55%);
+}
+
+.detail-hero__content {
+  position: relative;
+  z-index: 1;
+  padding: 7.5rem 0 3.25rem;
+  max-width: 46rem;
+}
+
+.detail-hero .eyebrow {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.detail-hero h1 {
+  color: var(--white);
+  max-width: 12ch;
+}
+
+.detail-hero__lead {
+  color: rgba(255, 255, 255, 0.82);
+  max-width: 38rem;
+}
+
+.detail-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin: 1.35rem 0 1.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.detail-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.detail-layout {
+  display: grid;
+  gap: 2.5rem;
+}
+
+.detail-list,
+.availability-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.detail-list li,
+.availability-list li {
+  position: relative;
+  padding: 1rem 1rem 1rem 2.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.detail-list li::before {
+  content: "";
+  position: absolute;
+  left: 0.95rem;
+  top: 1.35rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.detail-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.9rem;
+  counter-reset: none;
+}
+
+.detail-steps li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.15rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.detail-steps strong {
+  font-family: var(--display);
+  font-size: 1.55rem;
+  line-height: 1;
+  color: var(--accent-deep);
+}
+
+.detail-copy {
+  max-width: 42rem;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.detail-aside {
+  align-self: start;
+}
+
+.detail-cta-card {
+  position: sticky;
+  top: calc(var(--header-h) + 1rem);
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.6rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.detail-cta-card h3 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.detail-cta-card__price {
+  font-family: var(--display);
+  font-size: 2.4rem;
+  margin: 0.25rem 0;
+  letter-spacing: -0.03em;
+}
+
+.detail-cta-card .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.availability-list li {
+  display: grid;
+  gap: 0.2rem;
+  padding-left: 1rem;
+}
+
+.availability-list span {
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.doctor-detail-hero {
+  padding-bottom: 0.5rem;
+}
+
+.doctor-detail-hero__grid {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+}
+
+.doctor-detail-portrait {
+  border-radius: var(--radius);
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--bg-deep);
+  box-shadow: var(--shadow);
+}
+
+.doctor-detail-portrait img,
+.doctor-detail-portrait .media-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doctor-detail-spec {
+  font-size: 1.15rem;
+  margin: 0.35rem 0 0.5rem;
+}
+
+.doctor-fact-grid {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 2rem;
+}
+
+.doctor-fact-grid article {
+  padding: 1.15rem 1.25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 0.35rem;
+}
+
+.doctor-fact-grid strong {
+  font-size: 1.15rem;
+}
+
+.treatment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.1rem;
+  margin-top: 0.35rem;
+}
+
+.doctors-grid--related {
+  max-width: 100%;
+}
+
+@media (min-width: 720px) {
+  .detail-layout {
+    grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.7fr);
+    align-items: start;
+  }
+
+  .doctor-detail-hero__grid {
+    grid-template-columns: minmax(15rem, 0.85fr) minmax(0, 1.15fr);
+    gap: 2.75rem;
+  }
+
+  .doctor-fact-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .doctors-grid--related {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 719px) {
+  .detail-hero__actions .btn,
+  .detail-cta-card .btn,
+  .doctor-detail-intro .btn {
+    width: 100%;
   }
 }

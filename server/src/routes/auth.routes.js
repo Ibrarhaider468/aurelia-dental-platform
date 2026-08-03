@@ -1,7 +1,11 @@
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller.js";
-import { authenticate, authorize } from "../middleware/auth.middleware.js";
+import {
+  authenticate,
+  requirePermission,
+} from "../middleware/auth.middleware.js";
 import { validate } from "../middleware/validate.middleware.js";
+import { PERMISSIONS } from "../constants/roles.js";
 import {
   changePasswordSchema,
   loginSchema,
@@ -15,7 +19,7 @@ router.post("/login", validate(loginSchema), authController.login);
 router.post(
   "/register",
   authenticate,
-  authorize("ADMIN"),
+  requirePermission(PERMISSIONS.USERS_MANAGE),
   validate(registerSchema),
   authController.register,
 );

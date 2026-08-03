@@ -1,0 +1,134 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<section class="detail-hero">
+  <div class="detail-hero__media" aria-hidden="<%= service.image ? 'false' : 'true' %>">
+    <% if (service.image) { %>
+      <img src="<%= service.image %>" alt="" loading="eager" decoding="async" width="1600" height="900" />
+    <% } %>
+    <div class="detail-hero__veil"></div>
+  </div>
+  <div class="container detail-hero__content">
+    <p class="eyebrow">Treatment</p>
+    <h1><%= service.title %></h1>
+    <p class="lead detail-hero__lead"><%= service.description %></p>
+    <div class="detail-hero__meta">
+      <span><%= service.duration %> min appointment</span>
+      <span>From <%= helpers.money(service.price) %></span>
+    </div>
+    <div class="detail-hero__actions">
+      <a class="btn btn-accent" href="/book?serviceId=<%= service.id %>">Book this treatment</a>
+      <a class="btn btn-light" href="/treatments">All treatments</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container detail-layout">
+    <div class="detail-main">
+      <div class="section-head reveal" style="margin-bottom: 1.5rem;">
+        <p class="eyebrow">Benefits</p>
+        <h2>Why patients choose this care</h2>
+      </div>
+      <ul class="detail-list reveal">
+        <% benefits.forEach(function(item) { %>
+          <li><%= item %></li>
+        <% }) %>
+      </ul>
+
+      <div class="section-head reveal" style="margin: 2.75rem 0 1.5rem;">
+        <p class="eyebrow">Procedure</p>
+        <h2>What to expect</h2>
+      </div>
+      <ol class="detail-steps reveal">
+        <% steps.forEach(function(step, index) { %>
+          <li>
+            <strong>0<%= index + 1 %></strong>
+            <span><%= step %></span>
+          </li>
+        <% }) %>
+      </ol>
+
+      <div class="section-head reveal" style="margin: 2.75rem 0 1.5rem;">
+        <p class="eyebrow">Duration</p>
+        <h2>Appointment timing</h2>
+      </div>
+      <p class="reveal detail-copy">
+        Typical chair time for <strong><%= service.title %></strong> is
+        <strong><%= service.duration %> minutes</strong>. Complex cases may require additional visits — your clinician will confirm the full plan during consultation.
+      </p>
+    </div>
+
+    <aside class="detail-aside reveal">
+      <div class="detail-cta-card">
+        <p class="eyebrow">Ready to begin?</p>
+        <h3>Book <%= service.title %></h3>
+        <p class="muted">Choose a dentist, date, and time that suits you. Our team will confirm your appointment.</p>
+        <p class="detail-cta-card__price">From <%= helpers.money(service.price) %></p>
+        <a class="btn btn-accent" href="/book?serviceId=<%= service.id %>">Book appointment</a>
+        <a class="text-link" href="/#contact">Ask a question</a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<% if (faqs && faqs.length) { %>
+<section class="section section-soft" id="faq">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">FAQ</p>
+      <h2>Common questions about <%= service.title %></h2>
+    </div>
+    <div class="faq-list">
+      <% faqs.forEach(function(item) { %>
+        <details class="faq-item reveal">
+          <summary><%= item.q %></summary>
+          <p><%= item.a %></p>
+        </details>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (relatedDoctors && relatedDoctors.length) { %>
+<section class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">Clinicians</p>
+      <h2>Related dentists</h2>
+      <p class="lead">Experienced clinicians who commonly provide this treatment.</p>
+    </div>
+    <div class="doctors-grid doctors-grid--related">
+      <% relatedDoctors.forEach(function(doctor) { %>
+        <article class="doctor-card reveal">
+          <div class="doctor-media">
+            <% if (doctor.image) { %>
+              <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="lazy" decoding="async" width="640" height="800" />
+            <% } else { %>
+              <div class="media-fallback doctor-fallback"></div>
+            <% } %>
+          </div>
+          <div class="doctor-card__body">
+            <h3><%= doctor.name %></h3>
+            <p class="doctor-spec"><%= doctor.specialization || 'General Dentistry' %></p>
+            <a class="btn btn-dark" href="<%= helpers.doctorPath(doctor) %>">View profile</a>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section section-ink">
+  <div class="container cta-band reveal">
+    <div>
+      <p class="eyebrow">Next step</p>
+      <h2>Begin with a calm, considered consultation</h2>
+    </div>
+    <a class="btn btn-accent" href="/book?serviceId=<%= service.id %>">Book <%= service.title %></a>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

@@ -15,3 +15,11 @@ export const bookingSchema = z.object({
   slot: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Invalid time slot"),
   message: z.string().optional().nullable(),
 });
+
+export const contactMessageSchema = z.object({
+  name: z.string().min(2, "Name is required").max(120),
+  email: z.string().email("Valid email is required"),
+  phone: z.string().min(7, "Phone is required").max(40),
+  subject: z.string().min(2, "Subject is required").max(160),
+  message: z.string().min(10, "Message must be at least 10 characters").max(5000),
+});

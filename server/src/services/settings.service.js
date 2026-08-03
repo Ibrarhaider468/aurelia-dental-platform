@@ -1,8 +1,21 @@
 import { prisma } from "../config/db.js";
 import { invalidateWebsiteCache } from "./public.service.js";
+import { resetMailTransport } from "./email.service.js";
+
+const PASSWORD_PLACEHOLDER = "********";
+
+function sanitizeSettingsForClient(settings) {
+  if (!settings) return settings;
+  const { smtpPass, ...rest } = settings;
+  return {
+    ...rest,
+    smtpPass: smtpPass ? PASSWORD_PLACEHOLDER : "",
+    smtpConfigured: Boolean(settings.smtpHost && settings.smtpUser && smtpPass),
+  };
+}
 
 export async function getSettings() {
-  return prisma.settings.upsert({
+  const settings = await prisma.settings.upsert({
     where: { id: "clinic" },
     update: {},
     create: {
@@ -10,20 +23,39 @@ export async function getSettings() {
       clinicName: "Aurelia Dental",
     },
   });
+  return sanitizeSettingsForClient(settings);
 }
 
 export async function updateSettings(data) {
+  const current = await prisma.settings.findUnique({ where: { id: "clinic" } });
+
+  const payload = { ...data };
+  if (
+    payload.smtpPass === undefined ||
+    payload.smtpPass === null ||
+    payload.smtpPass === "" ||
+    payload.smtpPass === PASSWORD_PLACEHOLDER
+  ) {
+    delete payload.smtpPass;
+  }
+
+  if (payload.smtpPort !== undefined && payload.smtpPort !== null && payload.smtpPort !== "") {
+    payload.smtpPort = Number(payload.smtpPort);
+  }
+
   const settings = await prisma.settings.upsert({
     where: { id: "clinic" },
-    update: data,
+    update: payload,
     create: {
       id: "clinic",
-      clinicName: data.clinicName || "Aurelia Dental",
-      ...data,
+      clinicName: payload.clinicName || current?.clinicName || "Aurelia Dental",
+      ...payload,
     },
   });
+
   invalidateWebsiteCache();
-  return settings;
+  resetMailTransport();
+  return sanitizeSettingsForClient(settings);
 }
 
 export async function listFaqs() {

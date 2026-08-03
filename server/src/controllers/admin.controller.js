@@ -13,20 +13,36 @@ import * as settingsService from "../services/settings.service.js";
 import * as scheduleService from "../services/schedule.service.js";
 import * as slotService from "../services/slot.service.js";
 import * as paymentGatewayService from "../services/paymentGateway.service.js";
+import * as contactService from "../services/contact.service.js";
+import * as userService from "../services/user.service.js";
 import { getMailStatus } from "../services/email.service.js";
+import {
+  assertNotOtherDoctorRecord,
+  isDoctor,
+  requireLinkedDoctor,
+  scopedDoctorId,
+} from "../utils/rbac.js";
+import { hasPermission, PERMISSIONS } from "../constants/roles.js";
+import { AppError } from "../utils/AppError.js";
 
 const ok = (res, data, message = "OK", status = 200) =>
   res.status(status).json({ success: true, message, data });
 
-export const getDashboard = asyncHandler(async (_req, res) => {
-  ok(res, await dashboardService.getDashboardStats());
+export const getDashboard = asyncHandler(async (req, res) => {
+  ok(res, await dashboardService.getDashboardStats(req.user));
 });
 
 export const listDoctors = asyncHandler(async (req, res) => {
+  if (isDoctor(req.user)) {
+    const doctorId = requireLinkedDoctor(req.user);
+    ok(res, [await doctorService.getDoctor(doctorId)]);
+    return;
+  }
   ok(res, await doctorService.listDoctors(req.query));
 });
 
 export const getDoctor = asyncHandler(async (req, res) => {
+  assertNotOtherDoctorRecord(req.user, req.params.id);
   ok(res, await doctorService.getDoctor(req.params.id));
 });
 
@@ -79,11 +95,20 @@ export const deleteService = asyncHandler(async (req, res) => {
 });
 
 export const listAppointments = asyncHandler(async (req, res) => {
-  ok(res, await appointmentService.listAppointments(req.query));
+  ok(
+    res,
+    await appointmentService.listAppointments({
+      ...req.query,
+      doctorId: scopedDoctorId(req.user, req.query.doctorId),
+    }),
+  );
 });
 
 export const exportAppointments = asyncHandler(async (req, res) => {
-  const rows = await appointmentService.listAppointments(req.query);
+  const rows = await appointmentService.listAppointments({
+    ...req.query,
+    doctorId: scopedDoctorId(req.user, req.query.doctorId),
+  });
   const csv = appointmentService.appointmentsToCsv(rows);
   res.setHeader("Content-Type", "text/csv; charset=utf-8");
   res.setHeader(
@@ -99,25 +124,36 @@ export const getCalendar = asyncHandler(async (req, res) => {
     await slotService.listCalendarAppointments({
       from: req.query.from,
       to: req.query.to,
-      doctorId: req.query.doctorId,
+      doctorId: scopedDoctorId(req.user, req.query.doctorId),
     }),
   );
 });
 
 export const getAppointment = asyncHandler(async (req, res) => {
-  ok(res, await appointmentService.getAppointment(req.params.id));
+  const appointment = await appointmentService.getAppointment(req.params.id);
+  assertNotOtherDoctorRecord(req.user, appointment.doctorId);
+  ok(res, appointment);
 });
 
 export const createAppointment = asyncHandler(async (req, res) => {
+  const doctorId = scopedDoctorId(req.user, req.body.doctorId);
+  if (isDoctor(req.user) && req.body.doctorId && req.body.doctorId !== doctorId) {
+    throw new AppError("You do not have permission for this action", 403);
+  }
   ok(
     res,
-    await appointmentService.createAppointment(req.body),
+    await appointmentService.createAppointment({ ...req.body, doctorId }),
     "Appointment created",
     201,
   );
 });
 
 export const updateAppointment = asyncHandler(async (req, res) => {
+  const current = await appointmentService.getAppointment(req.params.id);
+  assertNotOtherDoctorRecord(req.user, current.doctorId);
+  if (isDoctor(req.user) && req.body.doctorId && req.body.doctorId !== current.doctorId) {
+    throw new AppError("You do not have permission for this action", 403);
+  }
   ok(
     res,
     await appointmentService.updateAppointment(req.params.id, req.body),
@@ -126,6 +162,8 @@ export const updateAppointment = asyncHandler(async (req, res) => {
 });
 
 export const deleteAppointment = asyncHandler(async (req, res) => {
+  const current = await appointmentService.getAppointment(req.params.id);
+  assertNotOtherDoctorRecord(req.user, current.doctorId);
   ok(
     res,
     await appointmentService.deleteAppointment(req.params.id),
@@ -134,8 +172,9 @@ export const deleteAppointment = asyncHandler(async (req, res) => {
 });
 
 export const getAdminSlots = asyncHandler(async (req, res) => {
-  const { doctorId, date } = req.validatedQuery || req.query;
-  ok(res, await slotService.getAvailableSlots(doctorId, date));
+  const query = req.validatedQuery || req.query;
+  const doctorId = scopedDoctorId(req.user, query.doctorId);
+  ok(res, await slotService.getAvailableSlots(doctorId, query.date));
 });
 
 export const listHolidays = asyncHandler(async (_req, res) => {
@@ -151,10 +190,11 @@ export const deleteHoliday = asyncHandler(async (req, res) => {
 });
 
 export const listLeaves = asyncHandler(async (req, res) => {
-  ok(
-    res,
-    await scheduleService.listDoctorLeaves(req.params.id || req.query.doctorId),
+  const doctorId = scopedDoctorId(
+    req.user,
+    req.params.id || req.query.doctorId,
   );
+  ok(res, await scheduleService.listDoctorLeaves(doctorId));
 });
 
 export const createLeave = asyncHandler(async (req, res) => {
@@ -175,15 +215,27 @@ export const deleteLeave = asyncHandler(async (req, res) => {
 });
 
 export const mailStatus = asyncHandler(async (_req, res) => {
-  ok(res, getMailStatus());
+  ok(res, await getMailStatus());
 });
 
 export const listPatients = asyncHandler(async (req, res) => {
-  ok(res, await patientService.listPatients(req.query));
+  ok(
+    res,
+    await patientService.listPatients({
+      ...req.query,
+      doctorId: isDoctor(req.user) ? requireLinkedDoctor(req.user) : undefined,
+    }),
+  );
 });
 
 export const getPatient = asyncHandler(async (req, res) => {
-  ok(res, await patientService.getPatient(req.params.id));
+  ok(
+    res,
+    await patientService.getPatient(req.params.id, {
+      doctorId: isDoctor(req.user) ? requireLinkedDoctor(req.user) : undefined,
+      includeFinance: hasPermission(req.user.role, PERMISSIONS.PAYMENTS_READ),
+    }),
+  );
 });
 
 export const createPatient = asyncHandler(async (req, res) => {
@@ -417,4 +469,56 @@ export const updateFaq = asyncHandler(async (req, res) => {
 
 export const deleteFaq = asyncHandler(async (req, res) => {
   ok(res, await settingsService.deleteFaq(req.params.id), "FAQ deleted");
+});
+
+export const listContactMessages = asyncHandler(async (req, res) => {
+  ok(res, await contactService.listContactMessages(req.query));
+});
+
+export const getContactMessage = asyncHandler(async (req, res) => {
+  ok(res, await contactService.getContactMessage(req.params.id));
+});
+
+export const updateContactMessageStatus = asyncHandler(async (req, res) => {
+  ok(
+    res,
+    await contactService.updateContactMessageStatus(req.params.id, req.body.status),
+    "Contact message updated",
+  );
+});
+
+export const deleteContactMessage = asyncHandler(async (req, res) => {
+  ok(
+    res,
+    await contactService.deleteContactMessage(req.params.id),
+    "Contact message deleted",
+  );
+});
+
+export const listUsers = asyncHandler(async (req, res) => {
+  ok(res, await userService.listUsers(req.query));
+});
+
+export const getUser = asyncHandler(async (req, res) => {
+  ok(res, await userService.getUser(req.params.id));
+});
+
+export const createUser = asyncHandler(async (req, res) => {
+  ok(res, await userService.createUser(req.body), "User created", 201);
+});
+
+export const updateUser = asyncHandler(async (req, res) => {
+  ok(
+    res,
+    await userService.updateUser(req.params.id, req.body, req.user.id),
+    "User updated",
+  );
+});
+
+export const deleteUser = asyncHandler(async (req, res) => {
+  ok(
+    res,
+    await userService.deleteUser(req.params.id, req.user.id),
+    "User deleted",
+  );
 });

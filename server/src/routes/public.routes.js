@@ -4,6 +4,7 @@ import * as publicController from "../controllers/public.controller.js";
 import { validate } from "../middleware/validate.middleware.js";
 import {
   bookingSchema,
+  contactMessageSchema,
   slotsQuerySchema,
 } from "../validators/public.validators.js";
 import { membershipSubscribeSchema } from "../validators/admin.validators.js";
@@ -43,5 +44,11 @@ router.post(
 );
 router.get("/insurance", publicController.listInsuranceProviders);
 router.get("/payment-options", publicController.paymentOptions);
+router.post(
+  "/contact",
+  bookingLimiter,
+  validate(contactMessageSchema),
+  publicController.createContactMessage,
+);
 
 export default router;

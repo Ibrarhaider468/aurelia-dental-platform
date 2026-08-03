@@ -225,6 +225,14 @@ export async function updateAppointment(id, data) {
           : {}),
         ...(data.email !== undefined ? { email: sanitizeEmail(data.email) } : {}),
         ...(data.phone !== undefined ? { phone: sanitizePhone(data.phone) } : {}),
+        ...(scheduleChanging
+          ? {
+              reminder24Sent: false,
+              reminder12Sent: false,
+              reminder24SentAt: null,
+              reminder12SentAt: null,
+            }
+          : {}),
       },
       include: {
         doctor: { select: { id: true, name: true } },

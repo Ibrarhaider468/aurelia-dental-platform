@@ -1,5 +1,6 @@
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
+import { invalidateWebsiteCache } from "./public.service.js";
 
 function normalizeEmpty(value) {
   if (value === "" || value === undefined) return null;
@@ -38,7 +39,7 @@ export async function getDoctor(id) {
 }
 
 export async function createDoctor(data) {
-  return prisma.doctor.create({
+  const doctor = await prisma.doctor.create({
     data: {
       name: data.name,
       image: normalizeEmpty(data.image),
@@ -52,11 +53,13 @@ export async function createDoctor(data) {
     },
     include: { availabilities: true },
   });
+  invalidateWebsiteCache();
+  return doctor;
 }
 
 export async function updateDoctor(id, data) {
   await getDoctor(id);
-  return prisma.doctor.update({
+  const doctor = await prisma.doctor.update({
     where: { id },
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
@@ -75,6 +78,8 @@ export async function updateDoctor(id, data) {
     },
     include: { availabilities: true },
   });
+  invalidateWebsiteCache();
+  return doctor;
 }
 
 export async function deleteDoctor(id) {
@@ -92,6 +97,7 @@ export async function deleteDoctor(id) {
     );
   }
   await prisma.doctor.delete({ where: { id } });
+  invalidateWebsiteCache();
   return { message: "Doctor deleted" };
 }
 
