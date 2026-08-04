@@ -14,7 +14,9 @@
     "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
     "verify:phase4": "node scripts/verify-phase4.js",
-    "verify:notifications": "node scripts/verify-notifications.js"
+    "verify:rbac": "node scripts/verify-rbac.js",
+    "verify:notifications": "node scripts/verify-notifications.js",
+    "verify:full": "node scripts/verify-full-smoke.js"
   },
   "dependencies": {
     "@prisma/client": "^6.14.0",
@@ -28,7 +30,6 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
-    "multer": "^2.0.2",
     "nodemailer": "^9.0.3",
     "zod": "^4.0.17"
   },

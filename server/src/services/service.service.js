@@ -1,6 +1,6 @@
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
-import { slugify } from "../utils/slugify.js";
+import { slugify } from "../utils/slug.js";
 
 function normalizeEmpty(value) {
   if (value === "" || value === undefined) return null;

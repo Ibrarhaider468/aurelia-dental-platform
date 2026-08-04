@@ -14,7 +14,7 @@
     <% if (!memberships.length) { %>
       <p class="empty-note">No active membership plans yet. Add plans in the admin panel.</p>
     <% } else { %>
-      <div class="membership-grid<%= memberships.length === 2 ? ' membership-grid--duo' : memberships.length === 1 ? ' membership-grid--solo' : '' %>">
+      <div class="membership-grid card-grid<%= memberships.length === 2 ? ' membership-grid--duo' : memberships.length === 1 ? ' membership-grid--solo' : '' %>" data-count="<%= memberships.length %>">
         <% memberships.forEach(function(plan, index) { %>
           <% const featured = memberships.length === 1 ? true : index === 1; %>
           <article class="membership-card<%= featured ? ' featured' : '' %> reveal" id="plan-<%= plan.id %>">

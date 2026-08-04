@@ -1,11 +1,18 @@
 <%- include('../partials/head') %>
 <%- include('../partials/header') %>
 
+<% const serviceSrc = helpers.serviceImage(service, 0); %>
 <section class="detail-hero">
-  <div class="detail-hero__media" aria-hidden="<%= service.image ? 'false' : 'true' %>">
-    <% if (service.image) { %>
-      <img src="<%= service.image %>" alt="" loading="eager" decoding="async" width="1600" height="900" />
-    <% } %>
+  <div class="detail-hero__media" aria-hidden="false">
+    <img
+      src="<%= serviceSrc %>"
+      data-fallback="<%= helpers.clinicImage() %>"
+      alt=""
+      loading="eager"
+      decoding="async"
+      width="1600"
+      height="900"
+    />
     <div class="detail-hero__veil"></div>
   </div>
   <div class="container detail-hero__content">
@@ -23,10 +30,10 @@
   </div>
 </section>
 
-<section class="section">
+<section class="section section--tight-bottom">
   <div class="container detail-layout">
     <div class="detail-main">
-      <div class="section-head reveal" style="margin-bottom: 1.5rem;">
+      <div class="section-head section-head--compact reveal">
         <p class="eyebrow">Benefits</p>
         <h2>Why patients choose this care</h2>
       </div>
@@ -36,7 +43,7 @@
         <% }) %>
       </ul>
 
-      <div class="section-head reveal" style="margin: 2.75rem 0 1.5rem;">
+      <div class="section-head section-head--spaced reveal">
         <p class="eyebrow">Procedure</p>
         <h2>What to expect</h2>
       </div>
@@ -49,7 +56,7 @@
         <% }) %>
       </ol>
 
-      <div class="section-head reveal" style="margin: 2.75rem 0 1.5rem;">
+      <div class="section-head section-head--spaced reveal">
         <p class="eyebrow">Duration</p>
         <h2>Appointment timing</h2>
       </div>
@@ -92,22 +99,27 @@
 <% } %>
 
 <% if (relatedDoctors && relatedDoctors.length) { %>
-<section class="section">
+<section class="section section--tight-bottom">
   <div class="container">
     <div class="section-head reveal">
       <p class="eyebrow">Clinicians</p>
       <h2>Related dentists</h2>
       <p class="lead">Experienced clinicians who commonly provide this treatment.</p>
     </div>
-    <div class="doctors-grid doctors-grid--related">
-      <% relatedDoctors.forEach(function(doctor) { %>
+    <div class="doctors-grid doctors-grid--related card-grid" data-count="<%= relatedDoctors.length %>">
+      <% relatedDoctors.forEach(function(doctor, dIndex) { %>
+        <% const doctorSrc = helpers.doctorImage(doctor, dIndex); %>
         <article class="doctor-card reveal">
           <div class="doctor-media">
-            <% if (doctor.image) { %>
-              <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="lazy" decoding="async" width="640" height="800" />
-            <% } else { %>
-              <div class="media-fallback doctor-fallback"></div>
-            <% } %>
+            <img
+              src="<%= doctorSrc %>"
+              data-fallback="<%= helpers.mediaFallback('doctor') %>"
+              alt="<%= doctor.name %>"
+              loading="lazy"
+              decoding="async"
+              width="640"
+              height="800"
+            />
           </div>
           <div class="doctor-card__body">
             <div class="doctor-card__copy">
@@ -123,12 +135,10 @@
 </section>
 <% } %>
 
-<section class="section section-ink">
-  <div class="container cta-band reveal">
-    <div>
-      <p class="eyebrow">Next step</p>
-      <h2>Begin with a calm, considered consultation</h2>
-    </div>
+<section class="cta-band cta-band--compact">
+  <div class="container cta-inner reveal">
+    <p class="eyebrow">Next step</p>
+    <h2>Begin with a calm, considered consultation</h2>
     <a class="btn btn-accent" href="/book?serviceId=<%= service.id %>">Book <%= service.title %></a>
   </div>
 </section>

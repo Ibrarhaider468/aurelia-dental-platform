@@ -64,15 +64,20 @@
     <% if (!services.length) { %>
       <p class="empty-note reveal">Treatments will appear here once added in the admin panel.</p>
     <% } else { %>
-      <div class="services-grid">
-        <% services.forEach(function(service) { %>
+      <div class="services-grid card-grid" data-count="<%= services.length %>">
+        <% services.forEach(function(service, sIndex) { %>
+          <% const serviceSrc = helpers.serviceImage(service, sIndex); %>
           <article class="service-card reveal" id="service-<%= service.id %>">
             <div class="service-card__media">
-              <% if (service.image) { %>
-                <img src="<%= service.image %>" alt="<%= service.title %>" loading="lazy" decoding="async" width="720" height="540" />
-              <% } else { %>
-                <div class="media-fallback"></div>
-              <% } %>
+              <img
+                src="<%= serviceSrc %>"
+                data-fallback="<%= helpers.mediaFallback('service') %>"
+                alt="<%= service.title %>"
+                loading="lazy"
+                decoding="async"
+                width="720"
+                height="540"
+              />
             </div>
             <div class="service-card__body">
               <h3><%= service.title %></h3>
@@ -101,15 +106,20 @@
     <% if (!doctors.length) { %>
       <p class="empty-note reveal">Dentists will appear here once added in the admin panel.</p>
     <% } else { %>
-      <div class="doctors-grid">
-        <% doctors.forEach(function(doctor) { %>
+      <div class="doctors-grid card-grid" data-count="<%= doctors.length %>">
+        <% doctors.forEach(function(doctor, dIndex) { %>
+          <% const doctorSrc = helpers.doctorImage(doctor, dIndex); %>
           <article class="doctor-card reveal">
             <div class="doctor-media">
-              <% if (doctor.image) { %>
-                <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="lazy" decoding="async" width="640" height="800" />
-              <% } else { %>
-                <div class="media-fallback doctor-fallback"></div>
-              <% } %>
+              <img
+                src="<%= doctorSrc %>"
+                data-fallback="<%= helpers.mediaFallback('doctor') %>"
+                alt="<%= doctor.name %>"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="800"
+              />
             </div>
             <div class="doctor-card__body">
               <div class="doctor-card__copy">
@@ -206,16 +216,33 @@
     <% if (!gallery.length) { %>
       <p class="empty-note reveal">Published smile cases will appear here from the admin gallery.</p>
     <% } else { %>
-      <div class="gallery-grid">
-        <% gallery.forEach(function(item) { %>
-          <article class="gallery-card reveal">
+      <div class="gallery-grid card-grid" data-count="<%= gallery.length %>">
+        <% gallery.forEach(function(item, gIndex) { %>
+          <% const caseImages = helpers.galleryImages(item, gIndex); %>
+          <article class="gallery-card reveal" data-treatment="<%= item.treatment %>">
             <div class="gallery-images">
-              <figure>
-                <img src="<%= item.beforeImage %>" alt="<%= item.treatment %> before" loading="lazy" decoding="async" width="560" height="420" />
+              <figure class="gallery-figure gallery-figure--before<%= caseImages.split ? ' gallery-figure--split-before' : '' %><%= caseImages.tone === 'whiten' ? ' gallery-figure--tone-whiten' : '' %>">
+                <img
+                  src="<%= caseImages.before %>"
+                  data-fallback="<%= helpers.mediaFallback('service') %>"
+                  alt="<%= item.treatment %> — before treatment"
+                  loading="lazy"
+                  decoding="async"
+                  width="560"
+                  height="420"
+                />
                 <figcaption><span>Before</span></figcaption>
               </figure>
-              <figure>
-                <img src="<%= item.afterImage %>" alt="<%= item.treatment %> after" loading="lazy" decoding="async" width="560" height="420" />
+              <figure class="gallery-figure gallery-figure--after<%= caseImages.split ? ' gallery-figure--split-after' : '' %><%= caseImages.tone === 'whiten' ? ' gallery-figure--tone-whiten-after' : '' %>">
+                <img
+                  src="<%= caseImages.after %>"
+                  data-fallback="<%= helpers.mediaFallback('service') %>"
+                  alt="<%= item.treatment %> — after treatment"
+                  loading="lazy"
+                  decoding="async"
+                  width="560"
+                  height="420"
+                />
                 <figcaption><span>After</span></figcaption>
               </figure>
             </div>
@@ -240,7 +267,7 @@
     <% if (!testimonials.length) { %>
       <p class="empty-note reveal">Approved reviews will appear here from the admin panel.</p>
     <% } else { %>
-      <div class="testimonials-grid">
+      <div class="testimonials-grid card-grid" data-count="<%= testimonials.length %>">
         <% testimonials.forEach(function(item) { %>
           <blockquote class="testimonial reveal">
             <p>“<%= item.review %>”</p>
@@ -265,7 +292,7 @@
     <% if (!memberships.length) { %>
       <p class="empty-note reveal">Membership plans will appear once created in admin.</p>
     <% } else { %>
-      <div class="membership-grid<%= memberships.length === 2 ? ' membership-grid--duo' : memberships.length === 1 ? ' membership-grid--solo' : '' %>">
+      <div class="membership-grid card-grid<%= memberships.length === 2 ? ' membership-grid--duo' : memberships.length === 1 ? ' membership-grid--solo' : '' %>" data-count="<%= memberships.length %>">
         <% memberships.forEach(function(plan, index) { %>
           <% const featured = memberships.length === 1 ? true : index === 1; %>
           <article class="membership-card<%= featured ? ' featured' : '' %> reveal">
@@ -304,7 +331,7 @@
     <% if (!insurance.length) { %>
       <p class="empty-note reveal">Insurance providers will appear once added in admin.</p>
     <% } else { %>
-      <div class="simple-grid">
+      <div class="simple-grid card-grid" data-count="<%= insurance.length %>">
         <% insurance.forEach(function(item) { %>
           <article class="plain-item reveal">
             <h3><%= item.name %></h3>

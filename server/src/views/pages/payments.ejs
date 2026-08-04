@@ -17,7 +17,7 @@
   </div>
 </section>
 
-<section class="section" style="padding-top: 1rem;">
+<section class="section">
   <div class="container">
     <div class="payment-options reveal">
       <% (paymentOptions.methods || []).forEach(function(method) { %>
@@ -25,7 +25,7 @@
       <% }) %>
     </div>
 
-    <div class="simple-grid" style="margin-top: 2.5rem;">
+    <div class="simple-grid card-grid payments-grid" data-count="3">
       <article class="plain-item reveal">
         <h3>In-clinic &amp; private pay</h3>
         <p>Pay securely at reception or settle privately after your treatment plan is agreed. Currency: <%= paymentOptions.currency %>.</p>
@@ -47,7 +47,7 @@
       </article>
     </div>
 
-    <div class="contact-actions" style="margin-top: 2rem;">
+    <div class="contact-actions contact-actions--section">
       <a class="btn btn-dark" href="/book">Book and discuss payment</a>
       <a class="btn btn-light-dark" href="/membership">View membership plans</a>
     </div>

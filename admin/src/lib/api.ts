@@ -24,9 +24,15 @@ export async function api<T>(
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
   const res = await fetch(`${API_URL}${path}`, {
+    cache: "no-store",
     ...options,
     headers,
   });
+
+  // 304 has no body; treat as a failed/stale auth response so callers can retry cleanly
+  if (res.status === 304) {
+    throw new Error("Cached response expired. Please refresh and try again.");
+  }
 
   const json = (await res.json().catch(() => ({}))) as ApiResponse<T> & {
     message?: string;

@@ -7,6 +7,7 @@ import {
   serviceJsonLd,
 } from "../utils/seo.js";
 import { slugify } from "../utils/slug.js";
+import * as media from "../utils/public-media.js";
 
 function money(value) {
   return new Intl.NumberFormat("en-US", {
@@ -34,6 +35,11 @@ function pageLocals(req, data, page, seoInput, extras = {}) {
       money,
       formatDay,
       doctorPath: publicService.publicDoctorPath,
+      serviceImage: media.serviceImage,
+      doctorImage: media.doctorImage,
+      galleryImages: media.galleryImages,
+      clinicImage: media.clinicImage,
+      mediaFallback: media.mediaFallback,
     },
     query: req.query,
     currentPath: seoInput.path || "/",

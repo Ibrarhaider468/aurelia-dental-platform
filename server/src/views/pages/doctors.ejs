@@ -14,15 +14,20 @@
     <% if (!doctors.length) { %>
       <p class="empty-note reveal">Dentists will appear here once added in the admin panel.</p>
     <% } else { %>
-      <div class="doctors-grid">
-        <% doctors.forEach(function(doctor) { %>
+      <div class="doctors-grid card-grid" data-count="<%= doctors.length %>">
+        <% doctors.forEach(function(doctor, dIndex) { %>
+          <% const doctorSrc = helpers.doctorImage(doctor, dIndex); %>
           <article class="doctor-card reveal" id="doctor-<%= doctor.id %>">
             <div class="doctor-media">
-              <% if (doctor.image) { %>
-                <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="lazy" decoding="async" width="640" height="800" />
-              <% } else { %>
-                <div class="media-fallback doctor-fallback"></div>
-              <% } %>
+              <img
+                src="<%= doctorSrc %>"
+                data-fallback="<%= helpers.mediaFallback('doctor') %>"
+                alt="<%= doctor.name %>"
+                loading="lazy"
+                decoding="async"
+                width="640"
+                height="800"
+              />
             </div>
             <div class="doctor-card__body">
               <div class="doctor-card__copy">

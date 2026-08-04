@@ -100,7 +100,6 @@ Set these in `server/.env` (never commit secrets):
 | `TRUST_PROXY` | Recommended | `true` behind Nginx/load balancer |
 | `ADMIN_*` | Seed only | Change default password after first login |
 | `SMTP_*` / `MAIL_FROM` | Email | Booking notifications |
-| `CLOUDINARY_*` | Media | Image hosting |
 | `STRIPE_*` / `PAYPAL_*` | Payments | Live keys + webhook secrets |
 | `PAYMENT_SUCCESS_URL` / `PAYMENT_CANCEL_URL` | Payments | Public return URLs |
 
@@ -187,12 +186,9 @@ Deploy `admin/dist` to Netlify/Vercel/Cloudflare Pages. Set:
 - Restrict network access to the app  
 - Run `db:migrate:deploy` before/with each release  
 
-### Cloudinary
+### Media / images
 
-1. Create a Cloudinary account  
-2. Copy cloud name, API key, API secret into env  
-3. Use folder `aurelia-dental` (or custom `CLOUDINARY_FOLDER`)  
-4. Store resulting HTTPS image URLs in gallery/services/doctors  
+Store HTTPS image URLs on services, doctors, and gallery items in admin (CDN or any public image host). The public site also applies presentation fallbacks in `server/src/utils/public-media.js` so broken seed URLs never render empty.
 
 ### Email (SMTP)
 
@@ -273,7 +269,8 @@ Refresh demo content anytime with `npm run db:seed`.
 | `npm run build` | Production admin build |
 | `npm start` | Production server |
 | `npm run lint` | Admin oxlint |
-| `npm run typecheck` | Admin TypeScript build |
+| `npm run build:check` | Admin production build check |
+| `npm run db:push` | Push Prisma schema (dev) |
 | `npm run db:migrate:deploy` | Apply migrations |
 
 ---

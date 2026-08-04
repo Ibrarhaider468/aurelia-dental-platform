@@ -11,21 +11,21 @@
   </div>
 </section>
 
-<section class="section" style="padding-top: 1rem;">
+<section class="section">
   <div class="container">
     <% if (!insurance.length) { %>
       <p class="empty-note">No insurance providers yet. Add them in the admin panel.</p>
     <% } else { %>
-      <div class="simple-grid">
+      <div class="simple-grid card-grid" data-count="<%= insurance.length %>">
         <% insurance.forEach(function(item) { %>
           <article class="plain-item reveal">
             <h3><%= item.name %></h3>
             <p><%= item.details %></p>
             <% if (item.acceptedPlans && item.acceptedPlans.length) { %>
               <p class="muted small">Accepted plans</p>
-              <ul class="simple-list" style="padding-left: 1.1rem; list-style: disc;">
+              <ul class="plan-chips">
                 <% item.acceptedPlans.forEach(function(plan) { %>
-                  <li style="background: transparent; padding: 0.15rem 0; display: list-item;"><%= plan %></li>
+                  <li><%= plan %></li>
                 <% }) %>
               </ul>
             <% } %>
@@ -34,7 +34,7 @@
       </div>
     <% } %>
 
-    <div class="contact-actions" style="margin-top: 2rem;">
+    <div class="contact-actions contact-actions--section">
       <a class="btn btn-dark" href="/book">Book a consultation</a>
       <a class="btn btn-light-dark" href="/#contact">Ask about cover</a>
     </div>

@@ -14,15 +14,20 @@
     <% if (!services.length) { %>
       <p class="empty-note reveal">Treatments will appear here once added in the admin panel.</p>
     <% } else { %>
-      <div class="treatments-grid">
-        <% services.forEach(function(service) { %>
+      <div class="treatments-grid card-grid" data-count="<%= services.length %>">
+        <% services.forEach(function(service, sIndex) { %>
+          <% const serviceSrc = helpers.serviceImage(service, sIndex); %>
           <article class="treatment-item reveal" id="service-<%= service.id %>">
             <div class="treatment-media">
-              <% if (service.image) { %>
-                <img src="<%= service.image %>" alt="<%= service.title %>" loading="lazy" decoding="async" width="720" height="540" />
-              <% } else { %>
-                <div class="media-fallback"></div>
-              <% } %>
+              <img
+                src="<%= serviceSrc %>"
+                data-fallback="<%= helpers.mediaFallback('service') %>"
+                alt="<%= service.title %>"
+                loading="lazy"
+                decoding="async"
+                width="720"
+                height="540"
+              />
             </div>
             <div class="treatment-body">
               <h3><%= service.title %></h3>

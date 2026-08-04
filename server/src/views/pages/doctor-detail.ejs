@@ -1,14 +1,19 @@
 <%- include('../partials/head') %>
 <%- include('../partials/header') %>
 
+<% const doctorSrc = helpers.doctorImage(doctor, 0); %>
 <section class="page-hero doctor-detail-hero">
   <div class="container doctor-detail-hero__grid">
     <div class="doctor-detail-portrait reveal">
-      <% if (doctor.image) { %>
-        <img src="<%= doctor.image %>" alt="<%= doctor.name %>" loading="eager" decoding="async" width="720" height="900" />
-      <% } else { %>
-        <div class="media-fallback doctor-fallback"></div>
-      <% } %>
+      <img
+        src="<%= doctorSrc %>"
+        data-fallback="<%= helpers.mediaFallback('doctor') %>"
+        alt="<%= doctor.name %>"
+        loading="eager"
+        decoding="async"
+        width="720"
+        height="900"
+      />
     </div>
     <div class="doctor-detail-intro reveal">
       <p class="eyebrow">Dentist</p>
@@ -17,8 +22,8 @@
       <p class="muted">
         <%= doctor.qualification || 'DDS' %><% if (doctor.experience != null) { %> · <%= doctor.experience %> years experience<% } %>
       </p>
-      <p class="lead" style="margin-top: 1.25rem;"><%= doctor.bio || 'Dedicated to calm, precise dental care with a patient-first approach.' %></p>
-      <div class="detail-hero__actions" style="margin-top: 1.75rem;">
+      <p class="lead doctor-detail-lead"><%= doctor.bio || 'Dedicated to calm, precise dental care with a patient-first approach.' %></p>
+      <div class="detail-hero__actions doctor-detail-actions">
         <a class="btn btn-accent" href="/book?doctorId=<%= doctor.id %>">Book with <%= doctor.name.split(' ').slice(-1)[0] %></a>
         <a class="btn btn-dark" href="/dentists">All dentists</a>
       </div>
@@ -26,7 +31,7 @@
   </div>
 </section>
 
-<section class="section">
+<section class="section section--tight-bottom">
   <div class="container detail-layout detail-layout--doctor">
     <div class="detail-main">
       <div class="section-head reveal">
@@ -75,12 +80,10 @@
   </div>
 </section>
 
-<section class="section section-ink">
-  <div class="container cta-band reveal">
-    <div>
-      <p class="eyebrow">Appointments</p>
-      <h2>Reserve a visit with <%= doctor.name %></h2>
-    </div>
+<section class="cta-band cta-band--compact">
+  <div class="container cta-inner reveal">
+    <p class="eyebrow">Appointments</p>
+    <h2>Reserve a visit with <%= doctor.name %></h2>
     <a class="btn btn-accent" href="/book?doctorId=<%= doctor.id %>">View times &amp; book</a>
   </div>
 </section>

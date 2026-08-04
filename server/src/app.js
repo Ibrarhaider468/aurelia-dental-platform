@@ -27,6 +27,7 @@ export function createApp() {
   app.set("view engine", "ejs");
   app.set("views", path.join(__dirname, "views"));
   app.disable("x-powered-by");
+  app.set("etag", false);
 
   app.use(
     helmet({
@@ -90,6 +91,14 @@ export function createApp() {
       },
     }),
   );
+
+  // Admin SPA APIs must not be cached — browsers/proxies may otherwise return 304
+  // with an empty body, which breaks JSON clients (especially /auth/me).
+  app.use("/api", (_req, res, next) => {
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+    res.setHeader("Pragma", "no-cache");
+    next();
+  });
 
   app.use(
     "/api",

@@ -20,6 +20,13 @@
   --radius-sm: 0.85rem;
   --header-h: 4.85rem;
   --content: min(1200px, calc(100% - 3rem));
+  --space-1: 0.5rem;   /* 8 */
+  --space-2: 1rem;     /* 16 */
+  --space-3: 1.5rem;   /* 24 */
+  --space-4: 2rem;     /* 32 */
+  --space-5: 3rem;     /* 48 */
+  --space-6: 4rem;     /* 64 */
+  --space-7: 5rem;     /* 80 */
   --font: "Figtree", sans-serif;
   --display: "Cormorant Garamond", serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -136,7 +143,11 @@ p {
 }
 
 .section {
-  padding: clamp(4.25rem, 8vw, 7rem) 0;
+  padding: clamp(var(--space-6), 8vw, var(--space-7)) 0;
+}
+
+.section--tight-bottom {
+  padding-bottom: clamp(var(--space-4), 5vw, var(--space-5));
 }
 
 .section-soft {
@@ -618,13 +629,6 @@ p {
   transform: scale(1.04);
 }
 
-.media-fallback {
-  width: 100%;
-  height: 100%;
-  background:
-    linear-gradient(145deg, var(--bg-deep), #d9deda);
-}
-
 .service-card__body,
 .treatment-body {
   padding: 1.4rem 1.45rem 1.55rem;
@@ -649,6 +653,7 @@ p {
   -webkit-box-orient: vertical;
   overflow: hidden;
   line-height: 1.55;
+  min-height: calc(1.55em * 3);
 }
 
 .meta-row {
@@ -852,13 +857,14 @@ p {
   gap: 0.5rem;
 }
 
-.gallery-images figure {
+.gallery-images figure,
+.gallery-figure {
   margin: 0;
   position: relative;
   overflow: hidden;
   border-radius: calc(var(--radius-sm) - 0.1rem);
   background: var(--bg-deep);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
 }
 
 .gallery-images img {
@@ -866,8 +872,67 @@ p {
   height: 100%;
   aspect-ratio: auto;
   object-fit: cover;
-  object-position: center;
-  transition: transform 0.7s var(--ease);
+  object-position: center 18%;
+  transition: transform 0.7s var(--ease), filter 0.45s var(--ease);
+}
+
+.gallery-figure--before img {
+  filter: saturate(0.82) contrast(0.96);
+}
+
+.gallery-figure--after img {
+  filter: saturate(1.06) contrast(1.02);
+}
+
+/* Split a clinical before|after plate into two square frames */
+.gallery-figure--split-before img,
+.gallery-figure--split-after img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  filter: none;
+}
+
+.gallery-figure--split-before img {
+  transform: scale(2);
+  transform-origin: left center;
+}
+
+.gallery-figure--split-after img {
+  transform: scale(2);
+  transform-origin: right center;
+}
+
+.gallery-card:hover .gallery-figure--split-before img {
+  transform: scale(2.06);
+  transform-origin: left center;
+}
+
+.gallery-card:hover .gallery-figure--split-after img {
+  transform: scale(2.06);
+  transform-origin: right center;
+}
+
+/* Same smile, shade shift — communicates whitening without unrelated stock */
+.gallery-figure--tone-whiten img {
+  filter: sepia(0.62) saturate(0.72) brightness(0.82) contrast(0.94) hue-rotate(-12deg);
+}
+
+.gallery-figure--tone-whiten-after img {
+  filter: brightness(1.18) saturate(1.12) contrast(1.08);
+}
+
+.gallery-card[data-treatment*="Invisalign"] .gallery-figure--after img,
+.gallery-card[data-treatment*="Align"] .gallery-figure--after img {
+  object-position: center 55%;
+}
+
+/* Keep home services as a filled 4×2 — no orphan cell beside Family Dentistry */
+@media (min-width: 980px) {
+  #services .services-grid.card-grid[data-count="8"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .gallery-card:hover .gallery-images img {
@@ -1211,25 +1276,42 @@ p {
 /* CTA / Contact */
 
 .cta-band {
-  padding: clamp(4rem, 8vw, 6rem) 0;
+  padding: clamp(var(--space-5), 7vw, var(--space-6)) 0;
   background:
     linear-gradient(135deg, rgba(20, 24, 22, 0.88), rgba(20, 24, 22, 0.72)),
-    url("https://images.unsplash.com/photo-1606811841689-23eaabb5a6b0?auto=format&fit=crop&w=1600&q=70")
+    url("https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1600&q=70")
       center/cover;
   color: var(--white);
 }
 
+.cta-band--compact {
+  padding: clamp(var(--space-4), 5vw, var(--space-5)) 0;
+}
+
+.cta-band .eyebrow {
+  color: var(--accent);
+}
+
 .cta-inner {
-  max-width: 40rem;
+  max-width: 42rem;
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
 }
 
 .cta-inner h2 {
-  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+  margin: 0;
+  max-width: 16ch;
 }
 
 .cta-inner p {
-  margin: 1rem 0 1.6rem;
+  margin: 0 0 var(--space-1);
   color: rgba(255, 255, 255, 0.78);
+}
+
+.cta-inner .btn {
+  margin-top: var(--space-1);
 }
 
 .contact-layout {
@@ -2058,12 +2140,12 @@ p {
 }
 
 .doctor-detail-hero {
-  padding-bottom: 0.5rem;
+  padding-bottom: var(--space-2);
 }
 
 .doctor-detail-hero__grid {
   display: grid;
-  gap: 2rem;
+  gap: var(--space-4);
   align-items: center;
 }
 
@@ -2071,15 +2153,16 @@ p {
   border-radius: var(--radius);
   overflow: hidden;
   aspect-ratio: 4 / 5;
+  max-height: 34rem;
   background: var(--bg-deep);
   box-shadow: var(--shadow);
 }
 
-.doctor-detail-portrait img,
-.doctor-detail-portrait .media-fallback {
+.doctor-detail-portrait img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
 }
 
 .doctor-detail-spec {
@@ -2087,10 +2170,18 @@ p {
   margin: 0.35rem 0 0.5rem;
 }
 
+.doctor-detail-lead {
+  margin-top: var(--space-3);
+}
+
+.doctor-detail-actions {
+  margin-top: var(--space-4);
+}
+
 .doctor-fact-grid {
   display: grid;
-  gap: 0.9rem;
-  margin-top: 2rem;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
 }
 
 .doctor-fact-grid article {
@@ -2259,5 +2350,196 @@ p {
   .testimonial:hover,
   .tech-card:hover {
     transform: none;
+  }
+}
+
+/* ========== Premium visual QA pass ========== */
+
+.section-head--compact {
+  margin-bottom: var(--space-3);
+}
+
+.section-head--spaced {
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.contact-actions--section {
+  margin-top: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.plan-chips {
+  list-style: none;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.plan-chips li {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+img.is-broken {
+  object-fit: cover;
+  background: var(--bg-deep);
+}
+
+.services-grid,
+.treatments-grid,
+.doctors-grid,
+.gallery-grid,
+.testimonials-grid,
+.simple-grid,
+.membership-grid {
+  gap: var(--space-3);
+}
+
+/* Balanced grids — avoid sparse left-aligned leftovers */
+.card-grid[data-count="1"] {
+  justify-items: center;
+}
+
+.card-grid[data-count="1"] > * {
+  width: min(100%, 28rem);
+}
+
+@media (min-width: 720px) {
+  .card-grid[data-count="2"].simple-grid,
+  .card-grid[data-count="2"].gallery-grid,
+  .card-grid[data-count="2"].testimonials-grid,
+  .card-grid[data-count="2"].doctors-grid,
+  .card-grid[data-count="2"].services-grid {
+    grid-template-columns: repeat(2, minmax(0, 22rem));
+    justify-content: center;
+  }
+
+  .card-grid[data-count="3"].simple-grid,
+  .card-grid[data-count="3"].gallery-grid,
+  .card-grid[data-count="3"].testimonials-grid,
+  .payments-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 980px) {
+  .doctors-grid.card-grid[data-count="4"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* 8 services → 4×2 so Family Dentistry is not left with an empty cell */
+  .services-grid.card-grid[data-count="8"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .services-grid.card-grid[data-count="7"],
+  .services-grid.card-grid[data-count="6"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .services-grid.card-grid[data-count="7"] > :last-child,
+  .services-grid.card-grid[data-count="5"] > :last-child {
+    grid-column: 1 / -1;
+    max-width: 22rem;
+    justify-self: center;
+    width: 100%;
+  }
+
+  .gallery-grid.card-grid[data-count="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .simple-grid.card-grid[data-count="3"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 979px) and (min-width: 720px) {
+  .doctors-grid.card-grid[data-count="4"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Keep treatment listing cards equal and image-stable */
+.treatments-grid .treatment-item {
+  min-height: 100%;
+}
+
+@media (min-width: 720px) {
+  .treatments-grid .treatment-media {
+    min-height: 14rem;
+  }
+
+  .treatments-grid .treatment-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.gallery-card {
+  min-height: 100%;
+}
+
+.gallery-images figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(20, 24, 22, 0.28));
+  pointer-events: none;
+}
+
+/* Compact detail pages so they don't leave a dead zone above the footer */
+.detail-layout--doctor {
+  align-items: start;
+}
+
+.page-hero.doctor-detail-hero {
+  padding: clamp(var(--space-4), 5vw, var(--space-5)) 0 var(--space-3);
+}
+
+.page-hero.doctor-detail-hero + .section {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+
+.doctor-detail-hero__grid {
+  align-items: start;
+}
+
+main > .cta-band:last-of-type {
+  margin-bottom: 0;
+}
+
+.site-footer {
+  margin-top: 0;
+}
+
+@media (max-width: 719px) {
+  .card-grid[data-count="1"] > * {
+    width: 100%;
+  }
+
+  .doctor-detail-portrait {
+    max-height: none;
+    aspect-ratio: 4 / 5;
+  }
+
+  .cta-band--compact .cta-inner {
+    justify-items: stretch;
+  }
+
+  .cta-band--compact .btn {
+    width: 100%;
+    justify-content: center;
   }
 }

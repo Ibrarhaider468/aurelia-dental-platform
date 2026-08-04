@@ -249,7 +249,7 @@ async function main() {
       duration: 90,
       price: 2200,
       image:
-        "https://images.unsplash.com/photo-1606811841689-23eaabb5a6b0?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1629909615184-74f495363b67?auto=format&fit=crop&w=1000&q=80",
       sortOrder: 1,
     },
     {
@@ -326,7 +326,7 @@ async function main() {
       duration: 45,
       price: 180,
       image:
-        "https://images.unsplash.com/photo-1588776813658-606aa85bdfc5?auto=format&fit=crop&w=1000&q=80",
+        "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=1000&q=80",
       sortOrder: 8,
     },
   ];
@@ -352,7 +352,7 @@ async function main() {
           treatment: "Porcelain Veneers",
           caption: "Balanced brightness and symmetry across the smile line.",
           beforeImage:
-            "https://images.unsplash.com/photo-1606811841689-23eaabb5a6b0?auto=format&fit=crop&w=800&q=70",
+            "https://images.unsplash.com/photo-1588776814546-daab30f310ce?auto=format&fit=crop&w=800&q=70",
           afterImage:
             "https://images.unsplash.com/photo-1609840114035-3c981b782dfe?auto=format&fit=crop&w=800&q=70",
           isPublished: true,

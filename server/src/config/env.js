@@ -55,12 +55,6 @@ export const env = {
   adminEmail: process.env.ADMIN_EMAIL || "admin@aureliadental.com",
   adminPassword: process.env.ADMIN_PASSWORD || "Admin123!",
   adminName: process.env.ADMIN_NAME || "Clinic Admin",
-  cloudinary: {
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
-    apiKey: process.env.CLOUDINARY_API_KEY || "",
-    apiSecret: process.env.CLOUDINARY_API_SECRET || "",
-    folder: process.env.CLOUDINARY_FOLDER || "aurelia-dental",
-  },
   mail: {
     host: process.env.SMTP_HOST || "",
     port: Number(process.env.SMTP_PORT || 587),
