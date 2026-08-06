@@ -106,8 +106,20 @@ Set these in `server/.env` (never commit secrets):
 Admin build env (`admin/.env.production`):
 
 ```env
+# Same host (Express serves /admin): relative API is fine
 VITE_API_URL=/api
 ```
+
+**Cloudflare Pages (admin on a different host):** relative `/api` will fail login.
+Set these before building/redeploying:
+
+| Where | Variable | Example |
+|-------|----------|---------|
+| Cloudflare Pages → Environment variables | `VITE_API_URL` | `https://api.yourdomain.com/api` |
+| API server `.env` | `CLIENT_URL` | `https://your-admin.pages.dev` |
+| API server `.env` (optional) | `CORS_ORIGINS` | `https://admin.yourdomain.com` |
+
+Then **Redeploy** the Pages project so Vite bakes in the new API URL.
 
 ---
 

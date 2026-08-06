@@ -1,4 +1,26 @@
-const API_URL = import.meta.env.VITE_API_URL || "/api";
+/** Trim trailing slash so paths like `/auth/login` always join cleanly. */
+const API_URL = String(import.meta.env.VITE_API_URL || "/api").replace(
+  /\/$/,
+  "",
+);
+
+function apiUnreachableMessage() {
+  const isRelative = API_URL.startsWith("/");
+  if (import.meta.env.PROD && isRelative) {
+    return (
+      "Cannot reach the API from this host. " +
+      "Cloudflare Pages has no /api backend — set VITE_API_URL to your full API URL " +
+      "(e.g. https://your-api-host.com/api) in Pages → Settings → Environment variables, then Redeploy."
+    );
+  }
+  if (import.meta.env.PROD) {
+    return (
+      `Cannot reach the API at ${API_URL}. ` +
+      "Check that the backend is online and that CLIENT_URL / CORS allows this admin origin."
+    );
+  }
+  return "Cannot reach the API. Make sure the server is running (port 4000) or Vite proxy is active.";
+}
 
 export type ApiResponse<T> = {
   success: boolean;
@@ -31,9 +53,7 @@ export async function api<T>(
       headers,
     });
   } catch {
-    throw new Error(
-      "Cannot reach the API. Make sure the server is running on port 4000.",
-    );
+    throw new Error(apiUnreachableMessage());
   }
 
   // 304 has no body; treat as a failed/stale auth response so callers can retry cleanly
@@ -43,6 +63,11 @@ export async function api<T>(
 
   if (res.status === 429) {
     throw new Error("Too many login attempts. Wait a minute and try again.");
+  }
+
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error(apiUnreachableMessage());
   }
 
   const json = (await res.json().catch(() => ({}))) as ApiResponse<T> & {

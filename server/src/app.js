@@ -55,12 +55,22 @@ export function createApp() {
 
   app.use(compression());
 
-  const allowedOrigins = new Set([
-    env.clientUrl,
-    env.publicSiteUrl,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-  ]);
+  // CLIENT_URL / CORS_ORIGINS may be comma-separated (Cloudflare Pages + custom domain)
+  const allowedOrigins = new Set(
+    [
+      ...String(env.clientUrl || "")
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+      ...String(env.corsOrigins || "")
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+      env.publicSiteUrl,
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+    ].filter(Boolean),
+  );
 
   app.use(
     cors({

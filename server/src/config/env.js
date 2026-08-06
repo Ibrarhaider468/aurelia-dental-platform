@@ -49,6 +49,8 @@ export const env = {
   jwtSecret,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || (isDev ? "7d" : "1d"),
   clientUrl: process.env.CLIENT_URL || "http://localhost:5173",
+  // Extra browser origins allowed by CORS (comma-separated), e.g. Pages preview URLs
+  corsOrigins: process.env.CORS_ORIGINS || "",
   publicSiteUrl: process.env.PUBLIC_SITE_URL || "http://localhost:4000",
   serveAdmin: process.env.SERVE_ADMIN !== "false",
   trustProxy: process.env.TRUST_PROXY === "true" || !isDev,
