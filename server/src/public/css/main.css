@@ -1473,8 +1473,19 @@ p {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
+  align-items: center;
   gap: 0.75rem;
   font-size: 0.88rem;
+}
+
+.footer-credit {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.footer-credit span {
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .empty-note {
@@ -2529,6 +2540,12 @@ img.is-broken {
 @media (max-width: 979px) and (min-width: 720px) {
   .doctors-grid.card-grid[data-count="4"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Four footer columns are too cramped on tablet */
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem 2rem;
   }
 }
 

@@ -21,39 +21,48 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(
-    () => localStorage.getItem("aurelia_token"),
-  );
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Bootstrap once on mount. Do NOT re-run on every token change —
+  // that used to call /auth/me after login and clear a valid session
+  // whenever me() briefly failed (network blip / proxy / rate noise).
   useEffect(() => {
     let active = true;
+
     async function bootstrap() {
-      if (!token) {
-        setLoading(false);
+      const existing = localStorage.getItem("aurelia_token");
+      if (!existing) {
+        if (active) setLoading(false);
         return;
       }
+
       try {
         const data = await authApi.me();
-        if (active) setUser(data.user);
+        if (!active) return;
+        setToken(existing);
+        setUser(data.user);
       } catch {
         localStorage.removeItem("aurelia_token");
-        if (active) {
-          setToken(null);
-          setUser(null);
-        }
+        if (!active) return;
+        setToken(null);
+        setUser(null);
       } finally {
         if (active) setLoading(false);
       }
     }
+
     void bootstrap();
     return () => {
       active = false;
     };
-  }, [token]);
+  }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await authApi.login(email, password);
+    const data = await authApi.login(email.trim(), password);
+    if (!data?.token || !data?.user) {
+      throw new Error("Login response was incomplete. Please try again.");
+    }
     localStorage.setItem("aurelia_token", data.token);
     setToken(data.token);
     setUser(data.user);

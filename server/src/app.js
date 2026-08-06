@@ -118,7 +118,11 @@ export function createApp() {
     "/api/auth/login",
     rateLimit({
       windowMs: 15 * 60 * 1000,
-      max: env.isDev ? 30 : 10,
+      // Dev needs headroom for QA retries; successful logins do not count.
+      max: env.isDev ? 200 : 20,
+      skipSuccessfulRequests: true,
+      standardHeaders: true,
+      legacyHeaders: false,
       message: {
         success: false,
         message: "Too many login attempts. Please try again later.",
