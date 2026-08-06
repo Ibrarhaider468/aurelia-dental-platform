@@ -100,6 +100,11 @@
       <div class="booking-panel" data-step="4" hidden>
         <h2>Choose a time slot</h2>
         <p class="muted" id="slot-hint">Loading open slots for your dentist and date…</p>
+        <div class="slot-legend" id="slot-legend" hidden>
+          <span class="slot-legend__item"><i class="slot-legend__swatch slot-legend__swatch--available" aria-hidden="true"></i> Available</span>
+          <span class="slot-legend__item"><i class="slot-legend__swatch slot-legend__swatch--booked" aria-hidden="true"></i> Booked</span>
+          <span class="slot-legend__item"><i class="slot-legend__swatch slot-legend__swatch--past" aria-hidden="true"></i> Passed</span>
+        </div>
         <div class="slot-grid" id="slot-grid" aria-live="polite"></div>
         <input type="hidden" name="slot" id="booking-slot" required />
         <div class="booking-nav">

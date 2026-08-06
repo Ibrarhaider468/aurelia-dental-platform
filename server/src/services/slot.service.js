@@ -29,6 +29,9 @@ export async function getAvailableSlots(doctorId, dateStr, { excludeAppointmentI
       date: dateStr,
       day: null,
       slots: [],
+      slotBoard: [],
+      bookedCount: 0,
+      availableCount: 0,
       reason: "Past dates cannot be booked",
     };
   }
@@ -52,6 +55,9 @@ export async function getAvailableSlots(doctorId, dateStr, { excludeAppointmentI
       date: dateStr,
       day: DAY_MAP[new Date(`${dateStr}T00:00:00`).getDay()],
       slots: [],
+      slotBoard: [],
+      bookedCount: 0,
+      availableCount: 0,
       reason: `Clinic closed: ${holiday.title}`,
     };
   }
@@ -61,6 +67,9 @@ export async function getAvailableSlots(doctorId, dateStr, { excludeAppointmentI
       date: dateStr,
       day: DAY_MAP[new Date(`${dateStr}T00:00:00`).getDay()],
       slots: [],
+      slotBoard: [],
+      bookedCount: 0,
+      availableCount: 0,
       reason: leave.reason || "Dentist is on leave",
     };
   }
@@ -75,6 +84,9 @@ export async function getAvailableSlots(doctorId, dateStr, { excludeAppointmentI
       date: dateStr,
       day,
       slots: [],
+      slotBoard: [],
+      bookedCount: 0,
+      availableCount: 0,
       reason: "Dentist is not available on this day",
     };
   }
@@ -98,11 +110,20 @@ export async function getAvailableSlots(doctorId, dateStr, { excludeAppointmentI
   });
 
   const bookedSet = new Set(booked.map((b) => b.slot));
-  const slots = allSlots.filter((slot) => {
-    if (bookedSet.has(slot)) return false;
-    if (isPastDateTime(dateStr, slot)) return false;
-    return true;
+
+  /** Full board for UI: available (white) / booked (black) / past */
+  const slotBoard = allSlots.map((slot) => {
+    if (bookedSet.has(slot)) {
+      return { time: slot, status: "booked", available: false };
+    }
+    if (isPastDateTime(dateStr, slot)) {
+      return { time: slot, status: "past", available: false };
+    }
+    return { time: slot, status: "available", available: true };
   });
+
+  // Keep string list for booking validation + existing clients
+  const slots = slotBoard.filter((s) => s.available).map((s) => s.time);
 
   return {
     date: dateStr,
@@ -115,6 +136,9 @@ export async function getAvailableSlots(doctorId, dateStr, { excludeAppointmentI
       breakEnd: availability.breakEnd,
     },
     slots,
+    slotBoard,
+    bookedCount: bookedSet.size,
+    availableCount: slots.length,
     reason: slots.length ? null : "No open slots for this date",
   };
 }

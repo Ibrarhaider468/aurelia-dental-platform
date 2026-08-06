@@ -8,6 +8,7 @@
   const slotGrid = document.getElementById("slot-grid");
   const slotInput = document.getElementById("booking-slot");
   const slotHint = document.getElementById("slot-hint");
+  const slotLegend = document.getElementById("slot-legend");
   const summary = document.getElementById("confirm-summary");
   const errorEl = document.getElementById("booking-error");
   const successPanel = document.getElementById("booking-success-panel");
@@ -89,10 +90,65 @@
     return null;
   }
 
+  function renderSlotBoard(board, fallbackAvailable = []) {
+    const items =
+      Array.isArray(board) && board.length
+        ? board
+        : fallbackAvailable.map((time) => ({
+            time,
+            status: "available",
+            available: true,
+          }));
+
+    if (slotLegend) slotLegend.hidden = !items.length;
+
+    items.forEach((item) => {
+      const time = typeof item === "string" ? item : item.time;
+      const status =
+        typeof item === "string" ? "available" : item.status || "available";
+      const available =
+        typeof item === "string" ? true : Boolean(item.available);
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `slot-btn slot-btn--${status}`;
+      btn.textContent = time;
+      btn.dataset.slot = time;
+      btn.dataset.status = status;
+
+      if (!available || status !== "available") {
+        btn.disabled = true;
+        btn.setAttribute(
+          "aria-label",
+          status === "booked"
+            ? `${time} already booked`
+            : `${time} no longer available`,
+        );
+        btn.title =
+          status === "booked"
+            ? "Already booked — choose another time"
+            : "This time has passed";
+      } else {
+        btn.setAttribute("aria-label", `${time} available`);
+        btn.addEventListener("click", () => {
+          slotInput.value = time;
+          slotGrid
+            .querySelectorAll(".slot-btn")
+            .forEach((b) => b.classList.remove("is-selected"));
+          btn.classList.add("is-selected");
+          showError("");
+        });
+      }
+
+      slotGrid.appendChild(btn);
+    });
+  }
+
   async function loadSlots() {
     const doctor = selectedRadio("doctorId");
     slotGrid.innerHTML = "";
     slotInput.value = "";
+    if (slotLegend) slotLegend.hidden = true;
 
     if (!doctor || !dateInput.value) {
       slotHint.textContent = "Select a dentist and date to load open slots.";
@@ -109,30 +165,25 @@
         throw new Error(json.message || "Unable to load slots");
       }
 
-      const slots = json.data.slots || [];
-      if (!slots.length) {
+      const available = json.data.slots || [];
+      const board = json.data.slotBoard || [];
+      const bookedCount = json.data.bookedCount ?? 0;
+
+      if (!board.length && !available.length) {
         slotHint.textContent =
           json.data.reason ||
           "No open slots for this date. Try another working day.";
         return;
       }
 
-      slotHint.textContent = `${slots.length} available slot${slots.length === 1 ? "" : "s"}`;
-      slots.forEach((slot) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "slot-btn";
-        btn.textContent = slot;
-        btn.addEventListener("click", () => {
-          slotInput.value = slot;
-          slotGrid
-            .querySelectorAll(".slot-btn")
-            .forEach((b) => b.classList.remove("is-selected"));
-          btn.classList.add("is-selected");
-          showError("");
-        });
-        slotGrid.appendChild(btn);
-      });
+      const openCount = json.data.availableCount ?? available.length;
+      slotHint.textContent =
+        openCount > 0
+          ? `${openCount} available · ${bookedCount} booked — white times are open, dark times are taken`
+          : json.data.reason ||
+            "All times for this date are booked or passed. Try another day.";
+
+      renderSlotBoard(board, available);
     } catch (err) {
       slotHint.textContent =
         err instanceof Error ? err.message : "Failed to load slots";

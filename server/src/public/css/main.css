@@ -1616,6 +1616,43 @@ p {
   gap: 0.9rem;
 }
 
+.slot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+  margin-top: 0.85rem;
+  font-size: 0.86rem;
+  color: var(--text);
+}
+
+.slot-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.slot-legend__swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  display: inline-block;
+}
+
+.slot-legend__swatch--available {
+  background: #fff;
+}
+
+.slot-legend__swatch--booked {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.slot-legend__swatch--past {
+  background: #d7dbd8;
+  border-color: #c5cbc6;
+}
+
 .slot-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
@@ -1624,19 +1661,45 @@ p {
 }
 
 .slot-btn {
-  border: 1px solid var(--line);
-  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: var(--ink);
   padding: 0.8rem 0.4rem;
   cursor: pointer;
   border-radius: 999px;
   font-weight: 650;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease),
+    border-color 0.15s var(--ease), transform 0.15s var(--ease);
 }
 
-.slot-btn.is-selected,
-.slot-btn:hover {
-  background: var(--ink);
-  color: var(--white);
+.slot-btn--available:hover {
   border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.slot-btn--available.is-selected {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.slot-btn--booked {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+  cursor: not-allowed;
+  opacity: 0.92;
+}
+
+.slot-btn--past {
+  background: #e4e8e5;
+  color: #7a847c;
+  border-color: #d0d6d1;
+  cursor: not-allowed;
+}
+
+.slot-btn:disabled {
+  pointer-events: none;
 }
 
 .confirm-card {

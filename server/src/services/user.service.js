@@ -1,24 +1,48 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
-import { ASSIGNABLE_ROLES, normalizeRole, ROLES } from "../constants/roles.js";
+import {
+  ASSIGNABLE_ROLES,
+  normalizeRole,
+  PERMISSIONS,
+  resolvePermissions,
+  ROLES,
+  sanitizePermissionList,
+} from "../constants/roles.js";
 
 const SALT_ROUNDS = 12;
 
 function sanitizeUser(user) {
+  const role = normalizeRole(user.role);
+  const customPermissions = user.customPermissions || [];
   return {
     id: user.id,
     name: user.name,
     email: user.email,
-    role: normalizeRole(user.role),
+    role,
     isActive: user.isActive,
     doctorId: user.doctor?.id ?? null,
     doctor: user.doctor
       ? { id: user.doctor.id, name: user.doctor.name }
       : null,
+    permissions: resolvePermissions(role, customPermissions),
+    customPermissions,
+    permissionsCustomized: customPermissions.length > 0,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
+}
+
+function assertSafePermissionChange(actorId, targetId, nextCustom, nextRole) {
+  if (actorId !== targetId) return;
+
+  const effective = resolvePermissions(nextRole, nextCustom);
+  if (!effective.includes(PERMISSIONS.USERS_MANAGE)) {
+    throw new AppError(
+      "You cannot remove your own user-management permission",
+      400,
+    );
+  }
 }
 
 async function linkDoctor(userId, doctorId, role) {
@@ -86,6 +110,11 @@ export async function createUser(data) {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) throw new AppError("Email is already registered", 409);
 
+  const customPermissions =
+    data.customPermissions !== undefined
+      ? sanitizePermissionList(data.customPermissions)
+      : [];
+
   const password = await bcrypt.hash(data.password, SALT_ROUNDS);
   const user = await prisma.user.create({
     data: {
@@ -94,6 +123,7 @@ export async function createUser(data) {
       password,
       role,
       isActive: data.isActive ?? true,
+      customPermissions,
     },
   });
 
@@ -133,6 +163,15 @@ export async function updateUser(id, data, actorId) {
     if (clash) throw new AppError("Email is already registered", 409);
   }
 
+  const nextCustom =
+    data.customPermissions !== undefined
+      ? sanitizePermissionList(data.customPermissions)
+      : current.customPermissions || [];
+
+  if (data.customPermissions !== undefined || data.role !== undefined) {
+    assertSafePermissionChange(actorId, id, nextCustom, nextRole);
+  }
+
   const password = data.password
     ? await bcrypt.hash(data.password, SALT_ROUNDS)
     : undefined;
@@ -145,6 +184,9 @@ export async function updateUser(id, data, actorId) {
       ...(password ? { password } : {}),
       ...(data.role !== undefined ? { role: nextRole } : {}),
       ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
+      ...(data.customPermissions !== undefined
+        ? { customPermissions: nextCustom }
+        : {}),
     },
   });
 

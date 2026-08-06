@@ -5,7 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   hasPermission,
   normalizeRole,
-  permissionsForRole,
+  resolvePermissions,
 } from "../constants/roles.js";
 
 export const authenticate = asyncHandler(async (req, _res, next) => {
@@ -33,6 +33,7 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
   }
 
   const role = normalizeRole(user.role);
+  const permissions = resolvePermissions(role, user.customPermissions);
 
   req.user = {
     id: user.id,
@@ -40,7 +41,8 @@ export const authenticate = asyncHandler(async (req, _res, next) => {
     email: user.email,
     role,
     doctorId: user.doctor?.id ?? null,
-    permissions: permissionsForRole(role),
+    permissions,
+    customPermissions: user.customPermissions || [],
   };
 
   next();
@@ -68,7 +70,7 @@ export function requirePermission(...permissions) {
     }
 
     const ok = permissions.some((permission) =>
-      hasPermission(req.user.role, permission),
+      hasPermission(req.user.role, permission, req.user.permissions),
     );
 
     if (!ok) {

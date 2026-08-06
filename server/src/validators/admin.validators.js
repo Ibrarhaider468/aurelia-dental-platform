@@ -223,6 +223,8 @@ export const contactStatusSchema = z.object({
   status: z.enum(["NEW", "READ", "REPLIED"]),
 });
 
+const permissionValueSchema = z.string().min(3).max(64);
+
 export const userCreateSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
@@ -234,6 +236,8 @@ export const userCreateSchema = z.object({
   role: z.enum(["SUPER_ADMIN", "STAFF", "FINANCE_MANAGER", "DOCTOR"]),
   isActive: z.boolean().optional(),
   doctorId: z.string().min(1).optional().nullable(),
+  /** Empty array = use role defaults. Non-empty = custom access override. */
+  customPermissions: z.array(permissionValueSchema).optional(),
 });
 
 export const userUpdateSchema = z.object({
@@ -248,4 +252,5 @@ export const userUpdateSchema = z.object({
   role: z.enum(["SUPER_ADMIN", "STAFF", "FINANCE_MANAGER", "DOCTOR"]).optional(),
   isActive: z.boolean().optional(),
   doctorId: z.string().min(1).optional().nullable(),
+  customPermissions: z.array(permissionValueSchema).optional(),
 });

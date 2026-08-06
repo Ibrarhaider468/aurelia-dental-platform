@@ -2,12 +2,13 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../config/db.js";
 import { AppError } from "../utils/AppError.js";
 import { signAccessToken } from "./token.service.js";
-import { normalizeRole, permissionsForRole } from "../constants/roles.js";
+import { normalizeRole, resolvePermissions } from "../constants/roles.js";
 
 const SALT_ROUNDS = 12;
 
 function sanitizeUser(user) {
   const role = normalizeRole(user.role);
+  const customPermissions = user.customPermissions || [];
   return {
     id: user.id,
     name: user.name,
@@ -15,7 +16,8 @@ function sanitizeUser(user) {
     role,
     isActive: user.isActive,
     doctorId: user.doctor?.id ?? null,
-    permissions: permissionsForRole(role),
+    permissions: resolvePermissions(role, customPermissions),
+    customPermissions,
     createdAt: user.createdAt,
   };
 }

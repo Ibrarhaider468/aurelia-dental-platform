@@ -21,7 +21,7 @@ export async function getDashboardStats(user) {
   const role = normalizeRole(user.role);
   const doctorId = role === ROLES.DOCTOR ? requireLinkedDoctor(user) : null;
   const doctorFilter = doctorId ? { doctorId } : {};
-  const canFinance = hasPermission(role, PERMISSIONS.FINANCE_READ);
+  const canFinance = hasPermission(role, PERMISSIONS.FINANCE_READ, user.permissions);
 
   const [
     totalAppointments,

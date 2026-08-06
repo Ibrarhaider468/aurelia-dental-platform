@@ -14,18 +14,53 @@ import {
   SuccessBanner,
   Toolbar,
 } from "../components/ui";
-import { roleLabel } from "../lib/permissions";
+import {
+  PERMISSION_GROUPS,
+  permissionLabel,
+  permissionsForRole,
+  roleLabel,
+  type Permission,
+} from "../lib/permissions";
 
 const ROLES = ["SUPER_ADMIN", "STAFF", "FINANCE_MANAGER", "DOCTOR"] as const;
 
-const empty = {
+type FormState = {
+  name: string;
+  email: string;
+  password: string;
+  role: (typeof ROLES)[number];
+  isActive: boolean;
+  doctorId: string;
+  customizePermissions: boolean;
+  selectedPermissions: Permission[];
+};
+
+const empty: FormState = {
   name: "",
   email: "",
   password: "",
-  role: "STAFF" as (typeof ROLES)[number],
+  role: "STAFF",
   isActive: true,
   doctorId: "",
+  customizePermissions: false,
+  selectedPermissions: permissionsForRole("STAFF"),
 };
+
+function formFromUser(user: AdminUser): FormState {
+  const customized = Boolean(user.customPermissions?.length);
+  return {
+    name: user.name,
+    email: user.email,
+    password: "",
+    role: user.role as (typeof ROLES)[number],
+    isActive: user.isActive,
+    doctorId: user.doctorId || "",
+    customizePermissions: customized,
+    selectedPermissions: customized
+      ? ([...(user.customPermissions || [])] as Permission[])
+      : permissionsForRole(user.role),
+  };
+}
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -36,7 +71,7 @@ export default function UsersPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [modal, setModal] = useState<"create" | "edit" | null>(null);
   const [selected, setSelected] = useState<AdminUser | null>(null);
-  const [form, setForm] = useState(empty);
+  const [form, setForm] = useState<FormState>(empty);
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -70,17 +105,62 @@ export default function UsersPage() {
     );
   }, [users, search]);
 
+  function setRole(role: (typeof ROLES)[number]) {
+    setForm((prev) => ({
+      ...prev,
+      role,
+      selectedPermissions: permissionsForRole(role),
+      // Changing role resets to role defaults unless already customizing —
+      // still refresh the checklist to the new role baseline.
+      customizePermissions: prev.customizePermissions,
+    }));
+  }
+
+  function togglePermission(permission: Permission) {
+    setForm((prev) => {
+      const has = prev.selectedPermissions.includes(permission);
+      return {
+        ...prev,
+        customizePermissions: true,
+        selectedPermissions: has
+          ? prev.selectedPermissions.filter((p) => p !== permission)
+          : [...prev.selectedPermissions, permission],
+      };
+    });
+  }
+
+  function selectAllPermissions() {
+    setForm((prev) => ({
+      ...prev,
+      customizePermissions: true,
+      selectedPermissions: permissionsForRole("SUPER_ADMIN"),
+    }));
+  }
+
+  function resetToRoleDefaults() {
+    setForm((prev) => ({
+      ...prev,
+      customizePermissions: false,
+      selectedPermissions: permissionsForRole(prev.role),
+    }));
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setError(null);
     try {
+      const customPermissions = form.customizePermissions
+        ? form.selectedPermissions
+        : [];
+
       const payload = {
         name: form.name,
         email: form.email,
         role: form.role,
         isActive: form.isActive,
         doctorId: form.role === "DOCTOR" ? form.doctorId || null : null,
+        customPermissions,
         ...(form.password ? { password: form.password } : {}),
       };
 
@@ -118,7 +198,7 @@ export default function UsersPage() {
     <div className="page">
       <PageHeader
         title="Users"
-        subtitle="Manage admin roles and clinic access"
+        subtitle="Manage roles and fine-grained access for clinic staff"
         actions={
           <button
             type="button"
@@ -152,7 +232,7 @@ export default function UsersPage() {
           {filtered.length === 0 ? (
             <EmptyState
               title="No users found"
-              text="Create staff, finance, or doctor accounts for role-based access."
+              text="Create staff, finance, or doctor accounts and customize their permissions."
             />
           ) : (
             <div className="table-wrap">
@@ -162,6 +242,7 @@ export default function UsersPage() {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Access</th>
                     <th>Doctor link</th>
                     <th>Status</th>
                     <th />
@@ -173,6 +254,15 @@ export default function UsersPage() {
                       <td>{user.name}</td>
                       <td>{user.email}</td>
                       <td>{roleLabel(user.role)}</td>
+                      <td>
+                        {user.permissionsCustomized ? (
+                          <span className="access-pill access-pill--custom">
+                            Custom ({user.permissions?.length ?? 0})
+                          </span>
+                        ) : (
+                          <span className="access-pill">Role default</span>
+                        )}
+                      </td>
                       <td>{user.doctor?.name || "—"}</td>
                       <td>
                         <StatusBadge
@@ -185,14 +275,7 @@ export default function UsersPage() {
                           className="btn btn-ghost"
                           onClick={() => {
                             setSelected(user);
-                            setForm({
-                              name: user.name,
-                              email: user.email,
-                              password: "",
-                              role: user.role as (typeof ROLES)[number],
-                              isActive: user.isActive,
-                              doctorId: user.doctorId || "",
-                            });
+                            setForm(formFromUser(user));
                             setModal("edit");
                           }}
                         >
@@ -250,10 +333,7 @@ export default function UsersPage() {
               <select
                 value={form.role}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
-                    role: e.target.value as (typeof ROLES)[number],
-                  })
+                  setRole(e.target.value as (typeof ROLES)[number])
                 }
               >
                 {ROLES.map((role) => (
@@ -293,6 +373,74 @@ export default function UsersPage() {
                 Account can sign in
               </label>
             </Field>
+
+            <div className="field-span permissions-panel">
+              <div className="permissions-panel__head">
+                <div>
+                  <strong>Permissions &amp; access</strong>
+                  <p className="muted">
+                    Customize what this user can open in admin. Uncheck
+                    &quot;Customize&quot; to follow the role defaults.
+                  </p>
+                </div>
+                <div className="permissions-panel__actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={selectAllPermissions}
+                  >
+                    Select all
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={resetToRoleDefaults}
+                  >
+                    Role defaults
+                  </button>
+                </div>
+              </div>
+
+              <label className="checkbox-row permissions-panel__toggle">
+                <input
+                  type="checkbox"
+                  checked={form.customizePermissions}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    setForm((prev) => ({
+                      ...prev,
+                      customizePermissions: on,
+                      selectedPermissions: on
+                        ? prev.selectedPermissions
+                        : permissionsForRole(prev.role),
+                    }));
+                  }}
+                />
+                Customize permissions for this user
+              </label>
+
+              <div
+                className={`permissions-grid${form.customizePermissions ? "" : " is-locked"}`}
+              >
+                {PERMISSION_GROUPS.map((group) => (
+                  <div key={group.label} className="permissions-group">
+                    <h4>{group.label}</h4>
+                    {group.permissions.map((permission) => (
+                      <label key={permission} className="checkbox-row">
+                        <input
+                          type="checkbox"
+                          disabled={!form.customizePermissions}
+                          checked={form.selectedPermissions.includes(permission)}
+                          onChange={() => togglePermission(permission)}
+                        />
+                        <span>{permissionLabel(permission)}</span>
+                      </label>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <FormActions onCancel={() => setModal(null)} saving={saving} />
           </form>
         </Modal>

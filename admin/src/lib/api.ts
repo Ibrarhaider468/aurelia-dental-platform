@@ -63,6 +63,7 @@ export type AuthUser = {
   isActive?: boolean;
   doctorId?: string | null;
   permissions?: string[];
+  customPermissions?: string[];
 };
 
 export type AdminUser = {
@@ -73,6 +74,9 @@ export type AdminUser = {
   isActive: boolean;
   doctorId?: string | null;
   doctor?: { id: string; name: string } | null;
+  permissions?: string[];
+  customPermissions?: string[];
+  permissionsCustomized?: boolean;
   createdAt?: string;
   updatedAt?: string;
 };

@@ -233,7 +233,11 @@ export const getPatient = asyncHandler(async (req, res) => {
     res,
     await patientService.getPatient(req.params.id, {
       doctorId: isDoctor(req.user) ? requireLinkedDoctor(req.user) : undefined,
-      includeFinance: hasPermission(req.user.role, PERMISSIONS.PAYMENTS_READ),
+      includeFinance: hasPermission(
+        req.user.role,
+        PERMISSIONS.PAYMENTS_READ,
+        req.user.permissions,
+      ),
     }),
   );
 });

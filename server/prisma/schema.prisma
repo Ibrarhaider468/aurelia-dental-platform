@@ -88,15 +88,17 @@ enum ContactMessageStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(STAFF)
-  isActive  Boolean  @default(true)
-  doctor    Doctor?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  email             String   @unique
+  password          String
+  role              Role     @default(STAFF)
+  /// When non-empty, overrides role defaults for effective access.
+  customPermissions String[] @default([])
+  isActive          Boolean  @default(true)
+  doctor            Doctor?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@map("users")
 }

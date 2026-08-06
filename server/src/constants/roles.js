@@ -80,15 +80,37 @@ export const ROLE_PERMISSIONS = Object.freeze({
   ],
 });
 
-export function hasPermission(role, permission) {
-  const normalized = normalizeRole(role);
-  return ROLE_PERMISSIONS[normalized]?.includes(permission) ?? false;
-}
-
 export function permissionsForRole(role) {
   const normalized = normalizeRole(role);
   return ROLE_PERMISSIONS[normalized] ? [...ROLE_PERMISSIONS[normalized]] : [];
 }
+
+/** Keep only known permission keys. */
+export function sanitizePermissionList(list) {
+  if (!Array.isArray(list)) return [];
+  const allowed = new Set(ALL_PERMISSIONS);
+  return [...new Set(list.filter((p) => allowed.has(p)))];
+}
+
+/**
+ * Effective permissions: custom list overrides role defaults when non-empty.
+ * Empty / missing customPermissions → role defaults.
+ */
+export function resolvePermissions(role, customPermissions) {
+  const custom = sanitizePermissionList(customPermissions);
+  if (custom.length > 0) return custom;
+  return permissionsForRole(role);
+}
+
+export function hasPermission(role, permission, explicitPermissions) {
+  if (Array.isArray(explicitPermissions)) {
+    return explicitPermissions.includes(permission);
+  }
+  const normalized = normalizeRole(role);
+  return ROLE_PERMISSIONS[normalized]?.includes(permission) ?? false;
+}
+
+export const ALL_PERMISSION_VALUES = ALL_PERMISSIONS;
 
 export const ASSIGNABLE_ROLES = [
   ROLES.SUPER_ADMIN,

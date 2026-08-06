@@ -79,12 +79,91 @@ export function normalizeRole(role?: string | null): string {
   return role || "";
 }
 
+/** Role defaults — used when a user has no custom override list. */
+export function permissionsForRole(role?: string | null): Permission[] {
+  return ROLE_PERMISSIONS[normalizeRole(role)]
+    ? [...ROLE_PERMISSIONS[normalizeRole(role)]]
+    : [];
+}
+
+export const ALL_PERMISSIONS = ALL;
+
+export const PERMISSION_GROUPS: { label: string; permissions: Permission[] }[] = [
+  {
+    label: "Overview",
+    permissions: [PERMISSIONS.DASHBOARD],
+  },
+  {
+    label: "Doctors",
+    permissions: [PERMISSIONS.DOCTORS_READ, PERMISSIONS.DOCTORS_MANAGE],
+  },
+  {
+    label: "Services",
+    permissions: [PERMISSIONS.SERVICES_READ, PERMISSIONS.SERVICES_MANAGE],
+  },
+  {
+    label: "Appointments",
+    permissions: [PERMISSIONS.APPOINTMENTS_READ, PERMISSIONS.APPOINTMENTS_MANAGE],
+  },
+  {
+    label: "Patients",
+    permissions: [PERMISSIONS.PATIENTS_READ, PERMISSIONS.PATIENTS_MANAGE],
+  },
+  {
+    label: "Schedule",
+    permissions: [
+      PERMISSIONS.SCHEDULE_READ,
+      PERMISSIONS.SCHEDULE_MANAGE,
+      PERMISSIONS.AVAILABILITY_OWN,
+    ],
+  },
+  {
+    label: "Finance",
+    permissions: [
+      PERMISSIONS.PAYMENTS_READ,
+      PERMISSIONS.PAYMENTS_MANAGE,
+      PERMISSIONS.FINANCE_READ,
+    ],
+  },
+  {
+    label: "Memberships & insurance",
+    permissions: [
+      PERMISSIONS.MEMBERSHIPS_READ,
+      PERMISSIONS.MEMBERSHIPS_MANAGE,
+      PERMISSIONS.INSURANCE_READ,
+      PERMISSIONS.INSURANCE_MANAGE,
+    ],
+  },
+  {
+    label: "CMS & contact",
+    permissions: [PERMISSIONS.CMS_MANAGE, PERMISSIONS.CONTACT_MANAGE],
+  },
+  {
+    label: "Settings & users",
+    permissions: [
+      PERMISSIONS.SETTINGS_READ,
+      PERMISSIONS.SETTINGS_MANAGE,
+      PERMISSIONS.USERS_MANAGE,
+    ],
+  },
+];
+
+export function permissionLabel(permission: string) {
+  return permission.replace(":", " · ").replaceAll("_", " ");
+}
+
+/**
+ * When `explicit` is provided (from /auth/me), it is the effective access list.
+ * Otherwise falls back to role defaults.
+ */
 export function hasPermission(
   role: string | undefined | null,
   permission: Permission,
   explicit?: string[] | null,
 ) {
-  if (explicit?.includes(permission)) return true;
+  if (Array.isArray(explicit)) {
+    return explicit.includes(permission);
+  }
   return ROLE_PERMISSIONS[normalizeRole(role)]?.includes(permission) ?? false;
 }
 
