@@ -167,11 +167,21 @@ export function hasPermission(
   return ROLE_PERMISSIONS[normalizeRole(role)]?.includes(permission) ?? false;
 }
 
+/** Normalize /admin/... nav paths to the permission map keys (/doctors, etc.). */
+export function adminPermissionPath(path: string) {
+  const parts = path.split("/").filter(Boolean);
+  if (parts[0] === "admin") {
+    return parts.length <= 1 ? "/" : `/${parts[1]}`;
+  }
+  return path === "/" ? "/" : `/${parts[0] || ""}`;
+}
+
 export function canAccessPath(
   path: string,
   role: string | undefined | null,
   explicit?: string[] | null,
 ) {
+  const key = adminPermissionPath(path);
   const map: Record<string, Permission | Permission[]> = {
     "/": PERMISSIONS.DASHBOARD,
     "/doctors": PERMISSIONS.DOCTORS_READ,
@@ -190,7 +200,7 @@ export function canAccessPath(
     "/users": PERMISSIONS.USERS_MANAGE,
   };
 
-  const required = map[path];
+  const required = map[key];
   if (!required) return true;
   const list = Array.isArray(required) ? required : [required];
   return list.some((p) => hasPermission(role, p, explicit));

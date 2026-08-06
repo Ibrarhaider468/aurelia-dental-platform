@@ -99,12 +99,12 @@ export default function DashboardPage() {
         actions={
           <div className="page-header__actions">
             {canAppointments ? (
-              <Link to="/appointments" className="btn btn-ghost">
+              <Link to="/admin/appointments" className="btn btn-ghost">
                 Appointments
               </Link>
             ) : null}
             {canPayments ? (
-              <Link to="/payments" className="btn btn-primary">
+              <Link to="/admin/payments" className="btn btn-primary">
                 Payments
               </Link>
             ) : null}
@@ -240,7 +240,7 @@ export default function DashboardPage() {
             subtitle="Newest booking activity across the clinic"
             actions={
               canAppointments ? (
-                <Link to="/appointments" className="btn btn-ghost btn-sm">
+                <Link to="/admin/appointments" className="btn btn-ghost btn-sm">
                   View all
                 </Link>
               ) : null

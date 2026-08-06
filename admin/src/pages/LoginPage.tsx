@@ -8,7 +8,8 @@ export default function LoginPage() {
   const { user, loading, login } = useAuth();
   const location = useLocation();
   const from =
-    (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
+    (location.state as { from?: { pathname: string } })?.from?.pathname ||
+    "/admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

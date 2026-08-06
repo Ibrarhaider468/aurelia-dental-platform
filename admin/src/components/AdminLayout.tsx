@@ -32,39 +32,39 @@ import {
 const sections = [
   {
     label: "Overview",
-    items: [{ to: "/", label: "Dashboard", icon: LayoutDashboard }],
+    items: [{ to: "/admin", label: "Dashboard", icon: LayoutDashboard }],
   },
   {
     label: "Clinic",
     items: [
-      { to: "/doctors", label: "Doctors", icon: Stethoscope },
-      { to: "/services", label: "Services", icon: Sparkles },
-      { to: "/appointments", label: "Appointments", icon: CalendarDays },
-      { to: "/schedule", label: "Schedule", icon: CalendarClock },
-      { to: "/patients", label: "Patients", icon: Users },
+      { to: "/admin/doctors", label: "Doctors", icon: Stethoscope },
+      { to: "/admin/services", label: "Services", icon: Sparkles },
+      { to: "/admin/appointments", label: "Appointments", icon: CalendarDays },
+      { to: "/admin/schedule", label: "Schedule", icon: CalendarClock },
+      { to: "/admin/patients", label: "Patients", icon: Users },
     ],
   },
   {
     label: "Finance",
     items: [
-      { to: "/payments", label: "Payments", icon: CreditCard },
-      { to: "/memberships", label: "Memberships", icon: Percent },
-      { to: "/insurance", label: "Insurance", icon: Shield },
+      { to: "/admin/payments", label: "Payments", icon: CreditCard },
+      { to: "/admin/memberships", label: "Memberships", icon: Percent },
+      { to: "/admin/insurance", label: "Insurance", icon: Shield },
     ],
   },
   {
     label: "Content",
     items: [
-      { to: "/gallery", label: "Gallery", icon: GalleryHorizontalEnd },
-      { to: "/testimonials", label: "Testimonials", icon: MessageSquareQuote },
-      { to: "/cms", label: "Website CMS", icon: FilePenLine },
-      { to: "/contact-messages", label: "Contact Messages", icon: Inbox },
-      { to: "/settings", label: "Settings", icon: Settings },
+      { to: "/admin/gallery", label: "Gallery", icon: GalleryHorizontalEnd },
+      { to: "/admin/testimonials", label: "Testimonials", icon: MessageSquareQuote },
+      { to: "/admin/cms", label: "Website CMS", icon: FilePenLine },
+      { to: "/admin/contact-messages", label: "Contact Messages", icon: Inbox },
+      { to: "/admin/settings", label: "Settings", icon: Settings },
     ],
   },
   {
     label: "Administration",
-    items: [{ to: "/users", label: "Users", icon: UserCog }],
+    items: [{ to: "/admin/users", label: "Users", icon: UserCog }],
   },
 ];
 
@@ -146,7 +146,7 @@ export default function AdminLayout() {
                 <NavLink
                   key={to}
                   to={to}
-                  end={to === "/"}
+                  end={to === "/admin"}
                   className={({ isActive }) =>
                     `sidebar__link${isActive ? " is-active" : ""}`
                   }

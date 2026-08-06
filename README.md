@@ -55,6 +55,8 @@ npm run dev:admin             # http://localhost:5173
 
 ## Production build & start
 
+The Vite app in `admin/` is the **unified SPA**: public site at `/`, admin console at `/admin`.
+
 ```bash
 npm install
 copy server\.env.example server\.env
@@ -64,22 +66,28 @@ npm run db:generate
 npm run db:migrate:deploy
 npm run db:seed                 # first deploy only
 
-# Build admin with /admin base path and relative API
+# Build the React SPA (public + admin)
 set NODE_ENV=production
-echo VITE_API_URL=/api> admin\.env.production
 npm run build
 
-# Start API + website (+ admin at /admin)
+# Start API (and optional legacy EJS site on the same host)
 set NODE_ENV=production
 npm start
 ```
 
-Production URLs (same host example):
+### Cloudflare Pages (recommended for the SPA)
 
-- Website: `https://your-domain.com`
-- Admin: `https://your-domain.com/admin/`
-- API: `https://your-domain.com/api`
-- Health: `https://your-domain.com/api/health`
+- **Root directory:** `admin`
+- **Build command:** `npm run build`
+- **Output directory:** `dist`
+- **Env:** `VITE_API_URL=https://YOUR-API-HOST/api`
+- SPA fallback: `public/_redirects` → `/* /index.html 200`
+
+Production URLs (split hosting example):
+
+- Website + Admin SPA: `https://your-pages-host/` and `https://your-pages-host/admin`
+- API: `https://your-api-host/api`
+- Health: `https://your-api-host/api/health`
 
 ---
 

@@ -11,16 +11,22 @@ export default function RoleRoute() {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
 
+  const parts = location.pathname.split("/").filter(Boolean);
+  // /admin → "/", /admin/doctors → "/doctors"
   const path =
-    location.pathname === "/"
-      ? "/"
-      : `/${location.pathname.split("/").filter(Boolean)[0] || ""}`;
+    parts[0] === "admin"
+      ? parts.length <= 1
+        ? "/"
+        : `/${parts[1]}`
+      : location.pathname === "/"
+        ? "/"
+        : `/${parts[0] || ""}`;
 
   if (!canAccessPath(path, user.role, user.permissions)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   return <Outlet />;

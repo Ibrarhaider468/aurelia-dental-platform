@@ -673,3 +673,53 @@ export type ContactMessage = {
   createdAt: string;
   updatedAt: string;
 };
+
+/** Public website bundle from GET /api/public/website */
+export type WebsiteBundle = {
+  settings: Settings;
+  services: Service[];
+  doctors: Doctor[];
+  gallery: GalleryItem[];
+  testimonials: Testimonial[];
+  insurance: InsuranceProvider[];
+  memberships: MembershipPlan[];
+  faqs: Faq[];
+  paymentOptions: {
+    currency?: string;
+    methods?: { code: string; label: string }[];
+    supportedMethods?: string[];
+    stripeConfigured?: boolean;
+    paypalConfigured?: boolean;
+  };
+};
+
+export type SlotBoardItem = {
+  time: string;
+  status: "available" | "booked" | "past" | string;
+  available: boolean;
+};
+
+export const publicApi = {
+  website: () => api<WebsiteBundle>("/public/website"),
+  slots: (doctorId: string, date: string) =>
+    api<{
+      available?: string[];
+      slotBoard?: SlotBoardItem[];
+      slots?: string[];
+    }>(`/public/slots?doctorId=${encodeURIComponent(doctorId)}&date=${encodeURIComponent(date)}`),
+  book: (body: Record<string, unknown>) =>
+    api<{ appointment?: Appointment; message?: string }>("/public/bookings", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  contact: (body: Record<string, unknown>) =>
+    api<{ message?: string }>("/public/contact", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+  subscribe: (body: Record<string, unknown>) =>
+    api<{ message?: string }>("/public/memberships/subscribe", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+};
