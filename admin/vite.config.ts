@@ -1,11 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-const isProd = process.env.NODE_ENV === "production";
-
 export default defineConfig({
   plugins: [react()],
-  base: isProd ? "/admin/" : "/",
+  // Relative asset paths so Cloudflare Pages (and similar hosts) load JS/CSS correctly
+  base: "./",
   build: {
     outDir: "dist",
     sourcemap: false,

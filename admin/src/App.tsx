@@ -20,12 +20,16 @@ import SettingsPage from "./pages/SettingsPage";
 import ContactMessagesPage from "./pages/ContactMessagesPage";
 import UsersPage from "./pages/UsersPage";
 
-const basename = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
+const rawBase = import.meta.env.BASE_URL;
+const basename =
+  !rawBase || rawBase === "/" || rawBase === "./"
+    ? undefined
+    : rawBase.replace(/\/$/, "") || undefined;
 
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename={basename === "/" ? undefined : basename}>
+      <BrowserRouter basename={basename}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route element={<ProtectedRoute />}>
